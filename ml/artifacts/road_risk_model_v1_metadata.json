@@ -1,0 +1,137 @@
+{
+  "model_id": "RoadSegmentRiskClassifier",
+  "name": "Clasificador Calibrado de Riesgo de Exposición por Segmento Vial",
+  "version": "1.0.0",
+  "selected_algorithm": "LightGBMClassifier + SigmoidCalibration",
+  "evaluated_algorithms": {
+    "GradientBoostingClassifier": {
+      "roc_auc": 0.9922,
+      "pr_auc": 0.9859,
+      "f1_score": 0.9231,
+      "brier_score": 0.0363,
+      "accuracy": 0.9463
+    },
+    "RandomForestClassifier": {
+      "roc_auc": 0.993,
+      "pr_auc": 0.9878,
+      "f1_score": 0.9345,
+      "brier_score": 0.0362,
+      "accuracy": 0.9545
+    },
+    "LightGBMClassifier": {
+      "roc_auc": 0.9946,
+      "pr_auc": 0.9901,
+      "f1_score": 0.9373,
+      "brier_score": 0.029,
+      "accuracy": 0.9566
+    },
+    "XGBoostClassifier": {
+      "roc_auc": 0.9943,
+      "pr_auc": 0.9893,
+      "f1_score": 0.9345,
+      "brier_score": 0.0323,
+      "accuracy": 0.9545
+    }
+  },
+  "training_dataset": {
+    "name": "road_segment_risk_dataset.csv (Red Vial Córdoba/San Luis + Perímetros FIRMS)",
+    "samples_total": 2200,
+    "samples_train": 1716,
+    "samples_test": 484,
+    "sha256": "71ea0f172cb3db91fd20d2afd4f43d2e417654369ba110efe82cd1c14c7f6b82"
+  },
+  "input_features": [
+    "dist_to_perimeter_km",
+    "dist_to_cone_1h_km",
+    "dist_to_cone_3h_km",
+    "wind_alignment_cos",
+    "fire_frp_mw",
+    "wind_speed_kmh",
+    "relative_humidity_pct",
+    "data_age_hours"
+  ],
+  "feature_bounds": {
+    "dist_to_perimeter_km": {
+      "min": 0.05,
+      "max": 25.0
+    },
+    "dist_to_cone_1h_km": {
+      "min": 0.0,
+      "max": 24.989
+    },
+    "dist_to_cone_3h_km": {
+      "min": 0.0,
+      "max": 24.838
+    },
+    "wind_alignment_cos": {
+      "min": -0.999,
+      "max": 1.0
+    },
+    "fire_frp_mw": {
+      "min": 5.0,
+      "max": 900.0
+    },
+    "wind_speed_kmh": {
+      "min": 2.0,
+      "max": 95.0
+    },
+    "relative_humidity_pct": {
+      "min": 8.09,
+      "max": 87.92
+    },
+    "data_age_hours": {
+      "min": 0.2,
+      "max": 21.17
+    }
+  },
+  "target_variable": "is_compromised_3h (Probabilidad de afectación térmica/humo en 3 horas)",
+  "metrics": {
+    "roc_auc": 0.9946,
+    "pr_auc": 0.9901,
+    "f1_score": 0.9373,
+    "brier_score": 0.029,
+    "accuracy": 0.9566
+  },
+  "feature_importances": [
+    {
+      "feature": "dist_to_cone_1h_km",
+      "importance": 0.8438
+    },
+    {
+      "feature": "dist_to_cone_3h_km",
+      "importance": 0.0574
+    },
+    {
+      "feature": "wind_alignment_cos",
+      "importance": 0.0481
+    },
+    {
+      "feature": "relative_humidity_pct",
+      "importance": 0.02
+    },
+    {
+      "feature": "data_age_hours",
+      "importance": 0.0174
+    },
+    {
+      "feature": "wind_speed_kmh",
+      "importance": 0.0093
+    },
+    {
+      "feature": "fire_frp_mw",
+      "importance": 0.0027
+    },
+    {
+      "feature": "dist_to_perimeter_km",
+      "importance": 0.0013
+    }
+  ],
+  "trained_at_utc": "2026-11-16T00:28:31Z",
+  "artifacts": {
+    "joblib": "road_risk_model_v1.joblib",
+    "onnx": "road_risk_model_v1.onnx"
+  },
+  "known_limitations": [
+    "Estima riesgo continuo pero NUNCA anula la restricción determinista: si cruza perímetro activo, queda BLOCKED."
+  ]
+}

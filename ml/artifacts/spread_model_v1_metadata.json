@@ -1,0 +1,128 @@
+{
+  "model_id": "FireSpreadPredictor",
+  "name": "Predictor Cinemático de Velocidad de Propagación Forestal",
+  "version": "1.0.0",
+  "selected_algorithm": "GradientBoostingRegressor",
+  "evaluated_algorithms": {
+    "GradientBoostingRegressor": {
+      "mae_kmh": 0.0825,
+      "rmse_kmh": 0.1053,
+      "r2_score": 0.9794
+    },
+    "RandomForestRegressor": {
+      "mae_kmh": 0.0993,
+      "rmse_kmh": 0.1316,
+      "r2_score": 0.9679
+    },
+    "LightGBMRegressor": {
+      "mae_kmh": 0.0896,
+      "rmse_kmh": 0.117,
+      "r2_score": 0.9746
+    },
+    "XGBoostRegressor": {
+      "mae_kmh": 0.0841,
+      "rmse_kmh": 0.1093,
+      "r2_score": 0.9778
+    }
+  },
+  "training_dataset": {
+    "name": "fire_spread_dataset.csv (NASA FIRMS Córdoba & San Luis + Open-Meteo)",
+    "samples_total": 1500,
+    "samples_train": 1170,
+    "samples_test": 330,
+    "sha256": "d989fba83b79a140420317b1ed37d168e4ea9bdb0dd688b64ce9c505bcc604c5"
+  },
+  "input_features": [
+    "frp_peak_mw",
+    "frp_density_mw_km2",
+    "delta_temp_k",
+    "points_count",
+    "wind_speed_kmh",
+    "relative_humidity_pct",
+    "temperature_c",
+    "seasonal_z_score"
+  ],
+  "feature_bounds": {
+    "frp_peak_mw": {
+      "min": 1.5,
+      "max": 481.37
+    },
+    "frp_density_mw_km2": {
+      "min": 2.0,
+      "max": 1200.0
+    },
+    "delta_temp_k": {
+      "min": 8.0,
+      "max": 48.57
+    },
+    "points_count": {
+      "min": 1.0,
+      "max": 38.0
+    },
+    "wind_speed_kmh": {
+      "min": 2.0,
+      "max": 74.25
+    },
+    "relative_humidity_pct": {
+      "min": 8.04,
+      "max": 87.88
+    },
+    "temperature_c": {
+      "min": 6.0,
+      "max": 46.0
+    },
+    "seasonal_z_score": {
+      "min": -1.8,
+      "max": 4.02
+    }
+  },
+  "target_variable": "spread_speed_kmh (Velocidad frontal de avance en km/h)",
+  "metrics": {
+    "mae_kmh": 0.0825,
+    "rmse_kmh": 0.1053,
+    "r2_score": 0.9794
+  },
+  "feature_importances": [
+    {
+      "feature": "wind_speed_kmh",
+      "importance": 0.626
+    },
+    {
+      "feature": "relative_humidity_pct",
+      "importance": 0.3574
+    },
+    {
+      "feature": "frp_peak_mw",
+      "importance": 0.0079
+    },
+    {
+      "feature": "seasonal_z_score",
+      "importance": 0.0066
+    },
+    {
+      "feature": "frp_density_mw_km2",
+      "importance": 0.001
+    },
+    {
+      "feature": "temperature_c",
+      "importance": 0.0008
+    },
+    {
+      "feature": "points_count",
+      "importance": 0.0002
+    },
+    {
+      "feature": "delta_temp_k",
+      "importance": 0.0
+    }
+  ],
+  "trained_at_utc": "2026-11-16T00:28:25Z",
+  "artifacts": {
+    "joblib": "spread_model_v1.joblib",
+    "onnx": "spread_model_v1.onnx"
+  },
+  "known_limitations": [
+    "Calibrado para bosque chaqueño serrano y pastizales de altura de Córdoba y San Luis.",
+    "En caso de vientos extremos (>95 km/h) fuera de distribución, activa automáticamente el límite físico conservador."
+  ]
+}

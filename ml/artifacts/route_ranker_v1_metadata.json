@@ -1,0 +1,127 @@
+{
+  "model_id": "AlternativeRouteRanker",
+  "name": "Ranker Multicriterio de Alternativas Viales de Evacuación",
+  "version": "1.0.0",
+  "selected_algorithm": "XGBoostRegressor",
+  "evaluated_algorithms": {
+    "GradientBoostingRegressor": {
+      "mae_utility": 0.0269,
+      "rmse_utility": 0.0338,
+      "r2_score": 0.9231
+    },
+    "RandomForestRegressor": {
+      "mae_utility": 0.0334,
+      "rmse_utility": 0.0411,
+      "r2_score": 0.8862
+    },
+    "LightGBMRegressor": {
+      "mae_utility": 0.0276,
+      "rmse_utility": 0.0342,
+      "r2_score": 0.9215
+    },
+    "XGBoostRegressor": {
+      "mae_utility": 0.0266,
+      "rmse_utility": 0.0332,
+      "r2_score": 0.9258
+    }
+  },
+  "training_dataset": {
+    "name": "alternative_routes_rank_dataset.csv (Evaluación Multicriterio OSRM + FIRMS)",
+    "samples_total": 1600,
+    "samples_train": 1248,
+    "samples_test": 352,
+    "sha256": "4875d40cae781fae683253af8c6f99b7b4881422cc5a8b57e50f93176da6f4c8"
+  },
+  "input_features": [
+    "distance_km",
+    "duration_min",
+    "mean_segment_risk",
+    "max_segment_risk",
+    "min_dist_to_fire_km",
+    "min_dist_to_cone_3h_km",
+    "shelter_verified",
+    "shelter_capacity_score"
+  ],
+  "feature_bounds": {
+    "distance_km": {
+      "min": 3.03,
+      "max": 47.97
+    },
+    "duration_min": {
+      "min": 3.58,
+      "max": 84.57
+    },
+    "mean_segment_risk": {
+      "min": 0.01,
+      "max": 0.944
+    },
+    "max_segment_risk": {
+      "min": 0.074,
+      "max": 0.99
+    },
+    "min_dist_to_fire_km": {
+      "min": 0.301,
+      "max": 28.0
+    },
+    "min_dist_to_cone_3h_km": {
+      "min": 0.102,
+      "max": 25.0
+    },
+    "shelter_verified": {
+      "min": 0.0,
+      "max": 1.0
+    },
+    "shelter_capacity_score": {
+      "min": 0.1,
+      "max": 0.999
+    }
+  },
+  "target_variable": "route_utility_score (Score de Conveniencia y Prioridad [0, 1])",
+  "metrics": {
+    "mae_utility": 0.0266,
+    "rmse_utility": 0.0332,
+    "r2_score": 0.9258
+  },
+  "feature_importances": [
+    {
+      "feature": "min_dist_to_fire_km",
+      "importance": 0.3129
+    },
+    {
+      "feature": "max_segment_risk",
+      "importance": 0.3083
+    },
+    {
+      "feature": "min_dist_to_cone_3h_km",
+      "importance": 0.1732
+    },
+    {
+      "feature": "shelter_verified",
+      "importance": 0.107
+    },
+    {
+      "feature": "duration_min",
+      "importance": 0.0787
+    },
+    {
+      "feature": "distance_km",
+      "importance": 0.0126
+    },
+    {
+      "feature": "shelter_capacity_score",
+      "importance": 0.0073
+    },
+    {
+      "feature": "mean_segment_risk",
+      "importance": 0.0
+    }
+  ],
+  "trained_at_utc": "2026-11-16T00:28:35Z",
+  "artifacts": {
+    "joblib": "route_ranker_v1.joblib",
+    "onnx": "route_ranker_v1.onnx"
+  },
+  "known_limitations": [
+    "Opera exclusivamente sobre rutas previamente filtradas por el validador determinista."
+  ]
+}

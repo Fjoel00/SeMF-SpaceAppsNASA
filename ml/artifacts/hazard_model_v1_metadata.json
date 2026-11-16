@@ -1,0 +1,142 @@
+{
+  "model_id": "WildfireHazardTemporalPredictor",
+  "name": "Predictor de Evolución Temporal del Peligro Regional de Incendios",
+  "version": "1.0.0",
+  "selected_algorithm": "GradientBoostingRegressor",
+  "evaluated_algorithms": {
+    "GradientBoostingRegressor": {
+      "mae_score": 3.0005,
+      "rmse_score": 3.8377,
+      "r2_score": 0.9208
+    },
+    "RandomForestRegressor": {
+      "mae_score": 3.0074,
+      "rmse_score": 3.8401,
+      "r2_score": 0.9207
+    },
+    "LightGBMRegressor": {
+      "mae_score": 3.2187,
+      "rmse_score": 4.095,
+      "r2_score": 0.9098
+    },
+    "XGBoostRegressor": {
+      "mae_score": 3.0655,
+      "rmse_score": 3.9015,
+      "r2_score": 0.9181
+    }
+  },
+  "training_dataset": {
+    "name": "wildfire_hazard_dataset.csv (Historial FIRMS 2000-2026 + Climatología ERA5/Meteo)",
+    "samples_total": 1800,
+    "samples_train": 1404,
+    "samples_test": 396,
+    "sha256": "0415971f8071c7c240adab43ca352a6335a1047f338d62f571280bd8e80267bc"
+  },
+  "input_features": [
+    "latitude",
+    "longitude",
+    "week_iso",
+    "historical_eq_count",
+    "wind_speed_kmh",
+    "temp_max_c",
+    "rh_min_pct",
+    "fwi_estimate",
+    "drought_days"
+  ],
+  "feature_bounds": {
+    "latitude": {
+      "min": -34.493,
+      "max": -29.501
+    },
+    "longitude": {
+      "min": -66.797,
+      "max": -62.5
+    },
+    "week_iso": {
+      "min": 1.0,
+      "max": 52.0
+    },
+    "historical_eq_count": {
+      "min": 0.0,
+      "max": 86.4
+    },
+    "wind_speed_kmh": {
+      "min": 4.0,
+      "max": 74.83
+    },
+    "temp_max_c": {
+      "min": 8.0,
+      "max": 44.0
+    },
+    "rh_min_pct": {
+      "min": 5.0,
+      "max": 77.94
+    },
+    "fwi_estimate": {
+      "min": 0.51,
+      "max": 120.0
+    },
+    "drought_days": {
+      "min": 0.0,
+      "max": 90.0
+    }
+  },
+  "target_variable": "hazard_score_100 (Índice de Peligro Forestal [0-100])",
+  "metrics": {
+    "mae_score": 3.0005,
+    "rmse_score": 3.8377,
+    "r2_score": 0.9208
+  },
+  "feature_importances": [
+    {
+      "feature": "fwi_estimate",
+      "importance": 0.8827
+    },
+    {
+      "feature": "historical_eq_count",
+      "importance": 0.0997
+    },
+    {
+      "feature": "rh_min_pct",
+      "importance": 0.0099
+    },
+    {
+      "feature": "drought_days",
+      "importance": 0.0025
+    },
+    {
+      "feature": "wind_speed_kmh",
+      "importance": 0.0022
+    },
+    {
+      "feature": "latitude",
+      "importance": 0.0021
+    },
+    {
+      "feature": "longitude",
+      "importance": 0.0007
+    },
+    {
+      "feature": "temp_max_c",
+      "importance": 0.0002
+    },
+    {
+      "feature": "week_iso",
+      "importance": 0.0001
+    }
+  ],
+  "trained_at_utc": "2026-11-16T00:28:33Z",
+  "artifacts": {
+    "joblib": "hazard_model_v1.joblib",
+    "onnx": "hazard_model_v1.onnx"
+  },
+  "temporal_horizons": {
+    "24h": "Inferencia directa con vector meteorológico 24h",
+    "48h": "Inferencia con decaimiento de humedad de combustible y persistencia de viento",
+    "72h": "Inferencia con proyección climatológica estacional de sequía"
+  },
+  "known_limitations": [
+    "Proyectado para la región fitogeográfica serrana de Córdoba y San Luis.",
+    "No reemplaza mediciones locales in-situ de combustible fino de 1h."
+  ]
+}

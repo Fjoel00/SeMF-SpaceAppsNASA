@@ -1,0 +1,68 @@
+{
+  "generated_at_utc": "2026-11-16T00:28:22Z",
+  "spread_dataset": {
+    "path": "c:\\Users\\Usuario\\Documents\\SeMF-SpaceAppsNASA\\SeMF-2.0\\ml\\datasets\\fire_spread_dataset.csv",
+    "rows": 1500,
+    "sha256": "d989fba83b79a140420317b1ed37d168e4ea9bdb0dd688b64ce9c505bcc604c5",
+    "features": [
+      "frp_peak_mw",
+      "frp_density_mw_km2",
+      "delta_temp_k",
+      "points_count",
+      "wind_speed_kmh",
+      "relative_humidity_pct",
+      "temperature_c",
+      "seasonal_z_score"
+    ],
+    "target": "spread_speed_kmh"
+  },
+  "road_risk_dataset": {
+    "path": "c:\\Users\\Usuario\\Documents\\SeMF-SpaceAppsNASA\\SeMF-2.0\\ml\\datasets\\road_segment_risk_dataset.csv",
+    "rows": 2200,
+    "sha256": "71ea0f172cb3db91fd20d2afd4f43d2e417654369ba110efe82cd1c14c7f6b82",
+    "features": [
+      "dist_to_perimeter_km",
+      "dist_to_cone_1h_km",
+      "dist_to_cone_3h_km",
+      "wind_alignment_cos",
+      "fire_frp_mw",
+      "wind_speed_kmh",
+      "relative_humidity_pct",
+      "data_age_hours"
+    ],
+    "target": "is_compromised_3h"
+  },
+  "wildfire_hazard_dataset": {
+    "path": "c:\\Users\\Usuario\\Documents\\SeMF-SpaceAppsNASA\\SeMF-2.0\\ml\\datasets\\wildfire_hazard_dataset.csv",
+    "rows": 1800,
+    "sha256": "0415971f8071c7c240adab43ca352a6335a1047f338d62f571280bd8e80267bc",
+    "features": [
+      "latitude",
+      "longitude",
+      "week_iso",
+      "historical_eq_count",
+      "wind_speed_kmh",
+      "temp_max_c",
+      "rh_min_pct",
+      "fwi_estimate",
+      "drought_days"
+    ],
+    "target": "hazard_score_100"
+  },
+  "alternative_routes_rank_dataset": {
+    "path": "c:\\Users\\Usuario\\Documents\\SeMF-SpaceAppsNASA\\SeMF-2.0\\ml\\datasets\\alternative_routes_rank_dataset.csv",
+    "rows": 1600,
+    "sha256": "4875d40cae781fae683253af8c6f99b7b4881422cc5a8b57e50f93176da6f4c8",
+    "features": [
+      "distance_km",
+      "duration_min",
+      "mean_segment_risk",
+      "max_segment_risk",
+      "min_dist_to_fire_km",
+      "min_dist_to_cone_3h_km",
+      "shelter_verified",
+      "shelter_capacity_score"
+    ],
+    "target": "route_utility_score"
+  }
+}
