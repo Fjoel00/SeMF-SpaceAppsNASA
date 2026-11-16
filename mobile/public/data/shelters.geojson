@@ -1,0 +1,334 @@
+{
+  "type": "FeatureCollection",
+  "name": "refugios_bomberos_cba_sl",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-66.0640, -33.1095] },
+      "properties": {
+        "id": "SHL-SL-001",
+        "name": "Cuartel de Bomberos Voluntarios El Trapiche",
+        "category": "FIRE_STATION",
+        "province": "San Luis",
+        "locality": "El Trapiche",
+        "access_road": "Ruta Provincial 9 Km 39",
+        "capacity_persons": 180,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-266-4493000"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.9870, -33.1180] },
+      "properties": {
+        "id": "SHL-SL-002",
+        "name": "Centro Operativo Defensa Civil La Florida",
+        "category": "CIVIL_DEFENSE",
+        "province": "San Luis",
+        "locality": "La Florida",
+        "access_road": "Ruta Provincial 39",
+        "capacity_persons": 250,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-266-4452010"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-66.2300, -33.2250] },
+      "properties": {
+        "id": "SHL-SL-003",
+        "name": "Base Bomberos y Hospital Potrero de los Funes",
+        "category": "HOSPITAL",
+        "province": "San Luis",
+        "locality": "Potrero de los Funes",
+        "access_road": "Ruta Provincial 18",
+        "capacity_persons": 320,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-266-4495044"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-66.3350, -33.2980] },
+      "properties": {
+        "id": "SHL-SL-004",
+        "name": "Hospital Central Dr. Ramón Carrillo (San Luis)",
+        "category": "HOSPITAL",
+        "province": "San Luis",
+        "locality": "San Luis Capital",
+        "access_road": "Autopista 25 de Mayo / RN 147",
+        "capacity_persons": 800,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-266-4452000"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.0120, -32.3420] },
+      "properties": {
+        "id": "SHL-SL-005",
+        "name": "Cuartel Central Bomberos Voluntarios Villa de Merlo",
+        "category": "FIRE_STATION",
+        "province": "San Luis",
+        "locality": "Villa de Merlo",
+        "access_road": "Ruta Provincial 1 / RN 148",
+        "capacity_persons": 350,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-2656-475065"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.4580, -32.8680] },
+      "properties": {
+        "id": "SHL-SL-006",
+        "name": "Centro de Evacuación Municipal La Toma (Conlara)",
+        "category": "EVAC_CENTER",
+        "province": "San Luis",
+        "locality": "La Toma",
+        "access_road": "Ruta Provincial 20 / RN 148",
+        "capacity_persons": 220,
+        "has_medical_support": false,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-2657-421080"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.8020, -32.2310] },
+      "properties": {
+        "id": "SHL-SL-007",
+        "name": "Cuartel de Bomberos y Defensa Civil Quines / Luján",
+        "category": "FIRE_STATION",
+        "province": "San Luis",
+        "locality": "Luján / Quines",
+        "access_road": "Ruta Nacional 20 / RN 79",
+        "capacity_persons": 190,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-2651-470100"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.0060, -31.7250] },
+      "properties": {
+        "id": "SHL-CB-001",
+        "name": "Cuartel Bomberos Voluntarios Mina Clavero (ETAC)",
+        "category": "FIRE_STATION",
+        "province": "Córdoba",
+        "locality": "Mina Clavero",
+        "access_road": "Ruta Provincial 14",
+        "capacity_persons": 300,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3544-470100"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.0180, -31.7140] },
+      "properties": {
+        "id": "SHL-CB-002",
+        "name": "Hospital Provincial Dr. Luis M. Bellodi (Traslasierra)",
+        "category": "HOSPITAL",
+        "province": "Córdoba",
+        "locality": "Villa Cura Brochero / Mina Clavero",
+        "access_road": "Ruta Provincial 15",
+        "capacity_persons": 400,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3544-476250"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.1880, -31.9460] },
+      "properties": {
+        "id": "SHL-CB-003",
+        "name": "Hospital Regional y Defensa Civil Villa Dolores",
+        "category": "HOSPITAL",
+        "province": "Córdoba",
+        "locality": "Villa Dolores",
+        "access_road": "Ruta Nacional 148 / RP 14",
+        "capacity_persons": 550,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3544-420500"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-64.4980, -31.4240] },
+      "properties": {
+        "id": "SHL-CB-004",
+        "name": "Base Operativa ETAC y Bomberos Villa Carlos Paz",
+        "category": "FIRE_STATION",
+        "province": "Córdoba",
+        "locality": "Villa Carlos Paz",
+        "access_road": "Ruta Nacional 20 / Autopista Córdoba-Carlos Paz",
+        "capacity_persons": 480,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3541-422222"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-64.4650, -31.2460] },
+      "properties": {
+        "id": "SHL-CB-005",
+        "name": "Hospital Provincial Domingo Funes / Cosquín (Punilla)",
+        "category": "HOSPITAL",
+        "province": "Córdoba",
+        "locality": "Cosquín",
+        "access_road": "Ruta Nacional 38",
+        "capacity_persons": 420,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3541-458000"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-64.3350, -31.3440] },
+      "properties": {
+        "id": "SHL-CB-006",
+        "name": "Cuartel de Bomberos Voluntarios La Calera / Sierras Chicas",
+        "category": "FIRE_STATION",
+        "province": "Córdoba",
+        "locality": "La Calera",
+        "access_road": "Ruta Provincial E-55",
+        "capacity_persons": 260,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3543-466333"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-64.2750, -31.2280] },
+      "properties": {
+        "id": "SHL-CB-007",
+        "name": "Defensa Civil Río Ceballos / Unquillo (Sierras Chicas)",
+        "category": "CIVIL_DEFENSE",
+        "province": "Córdoba",
+        "locality": "Río Ceballos",
+        "access_road": "Ruta Provincial E-53",
+        "capacity_persons": 310,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3543-451000"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-64.4280, -31.6520] },
+      "properties": {
+        "id": "SHL-CB-008",
+        "name": "Cuartel Bomberos y Defensa Civil Alta Gracia",
+        "category": "FIRE_STATION",
+        "province": "Córdoba",
+        "locality": "Alta Gracia",
+        "access_road": "Ruta Provincial 5",
+        "capacity_persons": 380,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3547-422222"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-64.5620, -32.0680] },
+      "properties": {
+        "id": "SHL-CB-009",
+        "name": "Hospital Regional Eva Perón (Santa Rosa de Calamuchita)",
+        "category": "HOSPITAL",
+        "province": "Córdoba",
+        "locality": "Santa Rosa de Calamuchita",
+        "access_road": "Ruta Provincial 5 Km 88",
+        "capacity_persons": 410,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3546-426688"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-63.8810, -31.6820] },
+      "properties": {
+        "id": "SHL-CB-010",
+        "name": "Cuartel Bomberos Voluntarios Pilar / Río Segundo",
+        "category": "FIRE_STATION",
+        "province": "Córdoba",
+        "locality": "Pilar / Río Segundo",
+        "access_road": "Autopista RN 9 / Ruta 13",
+        "capacity_persons": 290,
+        "has_medical_support": true,
+        "has_water_supply": true,
+        "is_verified_reliable": true,
+        "operational_status": "OPEN",
+        "contact_phone": "+54-3572-470100"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-65.9150, -33.2100] },
+      "properties": {
+        "id": "SHL-SL-099",
+        "name": "Puesto Rural Comunitario Paso del Rey (No Verificado)",
+        "category": "EVAC_CENTER",
+        "province": "San Luis",
+        "locality": "Paso del Rey",
+        "access_road": "Camino Vecinal RP 39",
+        "capacity_persons": 30,
+        "has_medical_support": false,
+        "has_water_supply": false,
+        "is_verified_reliable": false,
+        "operational_status": "STANDBY",
+        "contact_phone": "Sin línea fija verificada"
+      }
+    }
+  ]
+}

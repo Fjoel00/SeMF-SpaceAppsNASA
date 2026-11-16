@@ -10,10 +10,15 @@ env/
 
 # Frontend & Node
 node_modules/
+mobile/node_modules/
 dist/
+dist-server/
 frontend/dist/
+mobile/dist/
+mobile/dist-server/
 .vite/
 frontend/.vite/
+mobile/.vite/
 playwright-report/
 test-results/
 
