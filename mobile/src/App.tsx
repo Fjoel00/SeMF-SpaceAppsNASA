@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { ActiveTab, AppHealthState } from './types';
 import { AppHeader } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import { CalendarView } from './views/CalendarView';
-import { EscapeView } from './views/EscapeView';
 import { PanicView } from './views/PanicView';
+
+// Defer heavy MapLibre GL bundle until Escape tab is opened
+const EscapeView = lazy(() =>
+  import('./views/EscapeView').then((m) => ({ default: m.EscapeView }))
+);
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('calendar');
@@ -57,7 +61,18 @@ export const App: React.FC = () => {
 
       <main className="flex-1 w-full max-w-md mx-auto pb-24">
         {activeTab === 'calendar' && <CalendarView />}
-        {activeTab === 'escape' && <EscapeView />}
+        {activeTab === 'escape' && (
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] space-y-3 text-slate-400 text-xs">
+                <div className="w-8 h-8 border-2 border-cyan-info border-t-transparent rounded-full animate-spin"></div>
+                <span className="font-mono">Iniciando visor geoespacial y capas térmicas...</span>
+              </div>
+            }
+          >
+            <EscapeView onTriggerSOS={() => setActiveTab('panic')} />
+          </Suspense>
+        )}
         {activeTab === 'panic' && <PanicView />}
       </main>
 

@@ -20,15 +20,15 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icons/icon-192.png',
+            src: '/vite.svg',
             sizes: '192x192',
-            type: 'image/png',
+            type: 'image/svg+xml',
             purpose: 'any maskable'
           },
           {
-            src: '/icons/icon-512.png',
+            src: '/vite.svg',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/svg+xml',
             purpose: 'any maskable'
           }
         ]
@@ -64,6 +64,17 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'maplibre-vendor': ['maplibre-gl'],
+          'turf-vendor': ['@turf/turf'],
+          'react-vendor': ['react', 'react-dom'],
+        }
+      }
     }
   },
   server: {
