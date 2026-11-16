@@ -1,0 +1,119 @@
+{
+  "generated_at_utc": "2026-11-16T17:43:39Z",
+  "region_bbox": {
+    "lat_min": -36.05,
+    "lat_max": -29.4,
+    "lon_min": -67.55,
+    "lon_max": -61.65
+  },
+  "core_bbox": {
+    "lat_min": -33.5,
+    "lat_max": -31.0,
+    "lon_min": -66.0,
+    "lon_max": -63.5
+  },
+  "files": [
+    {
+      "file": "MODIS_NRT_-124_32_-114_42_5d.csv",
+      "sha256": "2b43c805dd77de3e269e5eb55e693c66304368991e3f5c0dfb94a4391805de06",
+      "size_bytes": 15713,
+      "total_records_in_file": 157,
+      "accepted_records": 0,
+      "date_range": [
+        "9999-99-99",
+        "0000-00-00"
+      ]
+    },
+    {
+      "file": "MODIS_NRT_-66.0_-33.5_-63.5_-31.0_5d.csv",
+      "sha256": "34ecfcb589f93a4ad53aacb07b5eef1795065ae989176c1dc84eba24cabba5c7",
+      "size_bytes": 466,
+      "total_records_in_file": 3,
+      "accepted_records": 2,
+      "date_range": [
+        "2026-11-12",
+        "2026-11-13"
+      ]
+    },
+    {
+      "file": "VIIRS_NOAA20_NRT_-124_32_-114_42_5d.csv",
+      "sha256": "985073884337ec4b7bc941207484f3f8c8dea252c4b6cc8f89a14a0127ed5095",
+      "size_bytes": 108111,
+      "total_records_in_file": 1045,
+      "accepted_records": 0,
+      "date_range": [
+        "9999-99-99",
+        "0000-00-00"
+      ]
+    },
+    {
+      "file": "VIIRS_NOAA20_NRT_-66.0_-33.5_-63.5_-31.0_5d.csv",
+      "sha256": "dcb8e2298a906c8c253ff0b6abd36827d32f6bb0e08e0ec0a0b20c43eaad1813",
+      "size_bytes": 1908,
+      "total_records_in_file": 16,
+      "accepted_records": 16,
+      "date_range": [
+        "2026-11-11",
+        "2026-11-13"
+      ]
+    },
+    {
+      "file": "VIIRS_NOAA21_NRT_-66.0_-33.5_-63.5_-31.0_5d.csv",
+      "sha256": "332124fbe388d7852653d6d1f9164930995a9067c26837f559ff361a062240f7",
+      "size_bytes": 1464,
+      "total_records_in_file": 12,
+      "accepted_records": 12,
+      "date_range": [
+        "2026-11-12",
+        "2026-11-13"
+      ]
+    },
+    {
+      "file": "VIIRS_SNPP_NRT_-124_32_-114_42_5d.csv",
+      "sha256": "00cbae48e2509f4116d61a5e9be3894bccb8b61bd6f15c873830e509287b2d46",
+      "size_bytes": 138,
+      "total_records_in_file": 0,
+      "accepted_records": 0,
+      "date_range": [
+        "9999-99-99",
+        "0000-00-00"
+      ]
+    },
+    {
+      "file": "VIIRS_SNPP_NRT_-66.0_-33.5_-63.5_-31.0_5d.csv",
+      "sha256": "4bfae1d09bc5edf93373731d8459d36fdddc5a82e070654bf9f37ad9bd3dfe79",
+      "size_bytes": 151,
+      "total_records_in_file": 0,
+      "accepted_records": 0,
+      "date_range": [
+        "9999-99-99",
+        "0000-00-00"
+      ]
+    },
+    {
+      "file": "historico/DL_FIRE_M-C61_850396.zip",
+      "sha256": "74e462f638b0e2876d82f3264491d78e4c36bd4bd45a515e24196c8b8a7cf5d3",
+      "size_bytes": 4769678,
+      "total_records_in_file": 129007,
+      "accepted_records": 82662,
+      "date_range": [
+        "2000-11-01",
+        "2012-12-31"
+      ]
+    },
+    {
+      "file": "historico/DL_FIRE_SV-C2_850297.zip",
+      "sha256": "3ee57538072d23323e249f4e974a02d68f01340bff925a11d82ce7ff45e0ac0c",
+      "size_bytes": 12528172,
+      "total_records_in_file": 330383,
+      "accepted_records": 215409,
+      "date_range": [
+        "2012-01-20",
+        "2026-11-01"
+      ]
+    }
+  ],
+  "total_files": 9,
+  "total_raw_scanned": 460623,
+  "total_harmonized_accepted": 298101
+}

@@ -18,7 +18,7 @@ const RadialArcGauge: React.FC<{
   color?: string;
   maxVal?: number;
   currVal?: number | string;
-}> = ({ percentage, label, sublabel, color = '#FF6117', maxVal, currVal }) => {
+}> = ({ percentage, label, sublabel, color = '#FF6117', currVal }) => {
   const radius = 54;
   const stroke = 12;
   const normalizedRadius = radius - stroke * 0.5;
@@ -145,7 +145,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono text-[#A0A0A8]">Última Sincronización:</span>
           <span className="px-3 py-1 rounded-full bg-[#252525] border border-[#38383E] text-xs font-mono font-bold text-white">
-            {metadata.last_overpass_utc || 'Hace 14 min'}
+            {metadata.generated_at_utc ? new Date(metadata.generated_at_utc).toLocaleTimeString() : 'Reciente'}
           </span>
         </div>
       </div>

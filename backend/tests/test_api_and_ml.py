@@ -105,6 +105,7 @@ class TestApiAndMLIntegration(unittest.TestCase):
         self.assertIn("detail", err)
 
     def test_simulation_and_settings_endpoints(self):
+        # El simulador de inyección sintética debe estar desactivado por regla estricta de CERO datos simulados
         status_sim, sim = dispatch_api_request(
             "POST",
             "/api/v1/fires/simulate",
@@ -118,10 +119,8 @@ class TestApiAndMLIntegration(unittest.TestCase):
                 },
             },
         )
-        self.assertEqual(status_sim, 200)
-        self.assertTrue(sim["simulation_active"])
-        self.assertTrue(sim["weather"]["is_extreme_30_30_30"])
-        self.assertEqual(len(sim["events"]), 1)
+        self.assertEqual(status_sim, 403)
+        self.assertIn("Simulador deshabilitado", sim["error"])
 
         status_cfg, cfg = dispatch_api_request(
             "PUT",

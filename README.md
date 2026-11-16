@@ -1,55 +1,18 @@
-# 🔥 SeMF Mobile — Alerta, Calendario & Rutas de Evacuación ante Incendios
+# 🔥 SeMF 2.0 — Plataforma Geoespacial de Monitoreo de Incendios y Evacuación
 
-[![PWA Ready](https://img.shields.io/badge/PWA-Installable-emerald?style=for-the-badge&logo=pwa)](mobile/)
-[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white&style=for-the-badge)](docker-compose.yml)
-[![Tests Passing](https://img.shields.io/badge/Tests-15%2F15%20Passing-brightgreen?style=for-the-badge)](mobile/tests/)
-[![Data: NASA FIRMS](https://img.shields.io/badge/Data-NASA%20FIRMS%20(2000--2026)-red.svg?style=for-the-badge)](https://firms.modaps.eosdis.nasa.gov/)
+[![Stack: React 18 + TS + FastAPI](https://img.shields.io/badge/Stack-React%2018%20%2B%20FastAPI%20%2B%20PostGIS-orange?style=for-the-badge)](https://github.com/Fjoel00/SeMF-SpaceAppsNASA)
+[![Docker Ready](https://img.shields.io/badge/Docker-Ready%20(Port%208090)-2496ED.svg?logo=docker&logoColor=white&style=for-the-badge)](docker-compose.yml)
+[![Tests Passing](https://img.shields.io/badge/Tests-25%2F25%20Passing-brightgreen?style=for-the-badge)](backend/tests/)
+[![Data: NASA FIRMS](https://img.shields.io/badge/Data-NASA%20FIRMS%20(2000--2026)-red.svg?style=for-the-badge)](data/AUDITORIA_DATOS.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-**SeMF Mobile** es una aplicación web progresiva (PWA) de respuesta y auxilio ciudadano ante incendios forestales en las provincias de **San Luis** y **Córdoba, Argentina** (con foco primario en San Luis). Diseñada bajo principios *mobile-first* (optimizada desde 360×640 px hasta tablets), opera de forma 100% autónoma, sin bases de datos externas pesadas y con capacidades completas fuera de línea (*offline-first*).
+**SeMF 2.0** es una plataforma científica y geoespacial full-stack de alerta temprana, análisis climatológico de régimen de fuego y cálculo determinista de rutas seguras de evacuación para las provincias de **Córdoba** y **San Luis, Argentina** (BBOX principal `[-66.0, -33.5, -63.5, -31.0]`).
 
 ---
 
-## 📱 Las 3 Pantallas Esenciales
+## ⚡ Inicio Rápido con Docker (1 Solo Comando)
 
-```mermaid
-flowchart LR
-    Tab1["📅 1. CALENDARIO<br>• Matriz 52 semanas ISO (2000–2026)<br>• Chips: San Luis / Córdoba / Región<br>• Tarjeta 'Esta Semana' & Z-Score"]
-    Tab2["🚨 2. SOS PÁNICO<br>• Pulsación 1,5s + Anillo + Vibración<br>• Ventana de cancelación 5s<br>• WhatsApp, SMS offline y 911 / 100 / 103"]
-    Tab3["🧭 3. RUTAS DE ESCAPE<br>• Mapa satelital MapLibre GL<br>• Buffer Turf 3 km sobre el fuego<br>• Deep links a Google Maps / Waze"]
-```
-
-### 1. Calendario Climatológico de Incendios (2000–2026)
-- **Filtro Rápido por Zona:** Selector de chips táctiles: *San Luis (capital y alrededores)* [por defecto], *Sierras de Córdoba*, y *Toda la región*.
-- **Tarjeta "Esta Semana":** Semáforo comprensible (Bajo / Medio / Alto / Extremo) que compara la semana actual contra el promedio histórico climatológico.
-- **Heatmap de 52 Semanas ISO x 27 Años:** Matriz interactiva de scroll horizontal fluido. Al tocar cualquier celda se despliega un *bottom sheet* táctil con el conteo de focos armonizados, potencia térmica radiativa (FRP en MW) y anomalía Z-Score respecto a la media histórica $\mu \pm 1\sigma$.
-- **Rendimiento Ultraliviano:** Datos divididos en archivos JSON de `< 100 KB` por zona, cargados bajo demanda y cacheados por el Service Worker.
-
-### 2. Rutas de Evacuación Segura con Evitación de Fuego
-- **Monitoreo Satelital en Tiempo Real:** Detecciones activas NASA FIRMS (VIIRS 375 m / MODIS 1 km) y catálogo auditado de refugios, cuarteles de bomberos y centros de defensa civil.
-- **Botón Primario "SALIR AHORA":** Detecta la posición GPS del usuario, evalúa los 2 refugios seguros más cercanos y traza el camino evitando el fuego.
-- **Algoritmo de Evitación de Fuego (Buffer 3 km):** Aplica un perímetro de seguridad de 3 km mediante Turf.js sobre los focos activos de las últimas 12 horas, enviando los polígonos a evitar a OpenRouteService / Valhalla (`avoid_polygons`).
-- **Respaldo de Emergencia Offline:** Si no hay conexión o no hay API key de ruteo configurada, utiliza rutas estáticas de contingencia precalculadas por localidad.
-- **Guía Conservadora Sin Salida:** Si el fuego rodea el área, orienta la evacuación de forma perpendicular al vector del viento hacia zonas quemadas o sin vegetación, destacando el botón de pánico.
-- **Navegación Externa:** Botones directos con destino cargado hacia **Google Maps**, **Waze** y **Apple Maps**.
-
-### 3. Botón de Pánico SOS (Protocolo de Vida)
-- **Activación Segura por Presión Sostenida:** Botón circular prominente activable tras mantener presionado 1,5 segundos (con anillo animado de progreso y vibración háptica), cancelable durante 5 segundos con aviso visual y sonoro.
-- **Composición Automática del Mensaje de Rescate:**
-  > `"EMERGENCIA INCENDIO. Mi ubicación: https://maps.google.com/?q={lat},{lon} (±{acc}m). Foco activo más cercano: {dist}km al {rumbo}. Destino: {refugio}."`
-- **Despacho Multicanal en 1 Toque:**
-  - **WhatsApp:** Abre chat con mensaje precargado para contactos de confianza.
-  - **SMS Nativo:** Funciona **100% sin conexión de datos móviles** ni cobertura de internet.
-  - **Compartir Nativo:** Web Share API para enviar por cualquier canal instalado.
-  - **Llamadas Directas:** 911 (Emergencias), 100 (Bomberos), 103 (Defensa Civil / San Luis Solidario) y números de manejo del fuego provinciales.
-- **Contactos de Confianza:** Almacenamiento local seguro (`localStorage`) de hasta 3 contactos.
-- **Pantalla Activa:** Mantiene la pantalla encendida automáticamente mediante **Wake Lock API**.
-
----
-
-## 🚀 Despliegue Rápido con Docker (1 Solo Comando)
-
-No requiere bases de datos, claves de API ni pasos previos. Todo viene preconfigurado:
+No requiere registro previo, tokens externos ni claves de API:
 
 ```bash
 docker compose up --build
@@ -58,86 +21,75 @@ docker compose up --build
 Abre en tu navegador:
 👉 **[http://localhost:8090](http://localhost:8090)**
 
-Para comprobar la salud del servicio:
+Verificación de salud del sistema:
 ```bash
-curl http://localhost:8090/api/health
+curl http://localhost:8090/api/v1/health
 ```
 
 ---
 
-## 💻 Ejecución Local para Desarrollo
+## 📱 Las 3 Pestañas Principales
 
-Requisitos: Node.js 20+ LTS y npm.
+La navegación de la plataforma se encuentra unificada y optimizada en 3 módulos esenciales:
 
+```mermaid
+flowchart LR
+    Tab1["📅 1. CALENDARIO HISTÓRICO<br>• Selector BBOX interactivo en mapa<br>• Heatmap 52 semanas x 27 años (2000–2026)<br>• Envolvente estacional μ ± 1σ<br>• Alertas Z-Score (|Z| ≥ 2.0)<br>• Filtro por sensor (Todos / VIIRS / MODIS)"]
+    Tab2["🎯 2. CONSOLA TÁCTICA<br>• Mapa satelital a pantalla completa<br>• Focos activos DBSCAN en tiempo real<br>• Planificador de rutas con evitación de fuego<br>• Catálogo auditado de refugios y cuarteles<br>• Paneles colapsables y salida por GPS"]
+    Tab3["⚙️ 3. INTELIGENCIA Y CONFIGURACIÓN<br>• Model Cards ONNX (v1.0.0)<br>• Inferencia en vivo de propagación y riesgo vial<br>• Parámetros científicos (DBSCAN eps, buffer)<br>• Estado de salud PostGIS, Redis y Open-Meteo"]
+```
+
+### 1. Calendario Histórico (2000–2026)
+- **Bounding Box Interactivo:** Selector geográfico directamente sobre el mapa (dibujar arrastrando o restablecer a región núcleo). Al soltar, recalcula dinámicamente las estadísticas climatológicas.
+- **Matriz Heatmap Multianual:** Matriz de 52 semanas ISO por 27 años continuos (2000 a 2026). Para 2026 se muestra como año parcial sin proyecciones artificiales.
+- **Envolvente Estacional Climatológica:** Media empírica $\mu$ y banda de variabilidad $\mu \pm 1\sigma$ calculadas sobre la serie cerrada de 26 años (2000–2025).
+- **Detección de Anomalías Estadísticas:** Alertas visuales destacadas para anomalías extremas ($|Z| \ge 2.0$).
+- **Filtro por Sensor:** Alterna entre *Todos*, *Solo VIIRS (375m)* y *Solo MODIS (1km)* recalculando la línea base acorde al instrumento.
+
+### 2. Consola Táctica
+- **Mapa Satelital Full-Screen:** Visualización con MapLibre GL sin API key (conmutador rápido *Calle OpenStreetMap* / *Satélite Esri World Imagery* con atribución siempre visible).
+- **Paneles Laterales Colapsables:**
+  - **Focos y Frentes Activos:** Detecciones agrupadas por clustering geodésico DBSCAN, potencia radiativa (FRP en MW) y velocidad cinemática de propagación.
+  - **Rutas de Evacuación Seguras:** Selección de punto de origen (o detección por GPS del dispositivo), destino de refugio y buffer de seguridad configurable (0.5 a 5.0 km). Clasificación en español llano: *Vía Despejada*, *Precaución por Proximidad* o *Ruta Bloqueada*. En caso de cerco total, activa automáticamente el *Corredor Conservador de Flanco*.
+  - **Puntos de Evacuación y Refugios:** Catálogo auditado de cuarteles de bomberos, hospitales y centros de evacuación con capacidad y estado.
+
+### 3. Inteligencia y Configuración
+- **Model Cards de Machine Learning:** Documentación de los 4 modelos (Hazard, Spread, Road Risk, Route Ranker) serializados en ONNX, entrenados con separación temporal estricta sobre datos reales.
+- **Simulador de Inferencia en Vivo:** Evaluación instantánea de velocidad de avance y probabilidad de afectación vial.
+- **Parámetros Científicos:** Ajuste de radio DBSCAN (`eps_km`), buffer vial y umbral de antigüedad satelital.
+
+---
+
+## 🛰️ Metodología y Trazabilidad de Datos (NASA FIRMS)
+
+- **Regla Estricta de CERO Datos Sintéticos:** Prohibida la generación, interpolación o simulación de incendios. Todo dato mostrado proviene directamente de descargas oficiales de NASA FIRMS.
+- **Cobertura 2000–2026:**
+  - MODIS (Terra/Aqua, Collection 6.1): 2000–2012 (y NRT reciente).
+  - VIIRS (S-NPP, NOAA-20, NOAA-21, Collection 2): 2012–2026.
+- **Armonización Física:** Canales térmicos Ch4 (~4 µm) y Ch5 (~11 µm), gradiente $\Delta T$, Fire Radiative Power (FRP), densidad radiativa $MW/km^2$ según huella de escaneo, y normalización de confianza continua $[0.0, 1.0]$.
+- **Deduplicación Inter-Sensor:** Regla determinista documentada: ante observaciones colocalizadas el mismo día (< 1 km), prevalece la mayor resolución espacial de VIIRS (375 m) sobre MODIS (1 km), eliminando el riesgo de doble conteo.
+- **Trazabilidad Criptográfica:** Manifiesto con checksums SHA-256 en [`data/manifest.json`](data/manifest.json) y reporte detallado en [`data/AUDITORIA_DATOS.md`](data/AUDITORIA_DATOS.md).
+
+---
+
+## 🗺️ Mapa Base Libre (Zero API Keys)
+
+El sistema utiliza proveedores de teselas raster abiertos y públicos, sin registrar cuentas ni tokens:
+- **OpenStreetMap:** `https://tile.openstreetmap.org/{z}/{x}/{y}.png` (Atribución: *© OpenStreetMap contributors*)
+- **Esri World Imagery:** `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}` (Atribución: *Esri, Maxar, Earthstar Geographics*)
+
+---
+
+## 🧪 Pruebas Automatizadas
+
+Ejecutar pruebas del backend (25 tests de integridad, ruteo y modelos):
 ```bash
-# 1. Ingresar a la carpeta mobile
-cd mobile
+python -m unittest discover -s backend/tests -v
+```
 
-# 2. Instalar dependencias
-npm install
-
-# 3. Iniciar servidor de desarrollo con recarga rápida (HMR)
-npm run dev
-
-# 4. Compilar para producción (Cliente Vite + Servidor Node)
+Ejecutar pruebas del frontend y verificación de tipos:
+```bash
+cd frontend
+npm run test
 npm run build
-
-# 5. Iniciar servidor de producción local
-npm start
 ```
-
----
-
-## ☁️ Deploy en Vercel (Paso a Paso)
-
-La aplicación está completamente adaptada para ejecutarse en la infraestructura Serverless y CDN de Vercel sin tocar ni modificar ningún proyecto previo:
-
-1. **Importar Repositorio:** En el panel de [Vercel](https://vercel.com), selecciona **Add New Project** e importa `SeMF-SpaceAppsNASA`.
-2. **Configurar Root Directory:** En la configuración del proyecto, haz clic en **Edit** junto a *Root Directory* y selecciona:
-   ```text
-   mobile
-   ```
-3. **Framework Preset:** Selecciona `Vite` (detectado automáticamente).
-4. **Variables de Entorno (Opcionales):**
-   - `FIRMS_MAP_KEY`: Tu clave de NASA FIRMS (si deseas consultar datos satelitales en vivo; si se omite, opera con los datos locales incluidos).
-   - `ROUTING_PROVIDER`: `openrouteservice` o `static_fallback`.
-   - `ORS_API_KEY`: Tu clave de OpenRouteService (opcional).
-5. **Hacer Clic en Deploy:** Vercel compilará la SPA estática en `/dist` y desplegará las Serverless Functions de `/api/*.ts` de forma automática con caché inmutable y revalidación en segundo plano.
-
----
-
-## 🧪 Suite de Pruebas Automatizadas
-
-La aplicación cuenta con pruebas exhaustivas unitarias, de integración y de humo en viewport móvil real (390×844 px):
-
-```bash
-cd mobile
-
-# Ejecutar tests unitarios, esquemas de datos y handlers
-npm test
-
-# Ejecutar test de humo E2E con Playwright simulando iPhone / Android
-npm run test:e2e
-```
-
----
-
-## ⚠️ Limitaciones Críticas y Responsabilidad
-
-1. **Latencia Satelital (NASA FIRMS):** Los satélites polares MODIS (Terra/Aqua) y VIIRS (Suomi-NPP / NOAA-20 / NOAA-21) realizan sobrevuelos programados (2 a 4 pasadas diarias por hemisferio). Una ausencia de detección satelital en el mapa **no garantiza** la ausencia de fuego activo en el terreno en ese instante.
-2. **Naturaleza del Fuego:** El comportamiento de los incendios de interfaz serrana es altamente dinámico y depende de ráfagas de viento y pendiente topográfica. Las rutas sugeridas buscan minimizar el riesgo geográfico pero deben ser contrastadas con la visibilidad en el camino.
-3. **Prioridad del 911:** Esta aplicación complementa y agiliza la comunicación pero **NO reemplaza** llamar inmediatamente a las autoridades oficiales a través del **911** o el **100**.
-
----
-
-## 📜 Origen de Datos y Reconocimientos
-
-- **Proyecto Base y Lógica Científica:** Este desarrollo reutiliza datos históricos preagregados, lógica de normalización y definiciones geográficas elaboradas en el proyecto de referencia **[HackatonNASA](https://github.com/Fjoel00/HackatonNASA)** por el equipo *Maxwell Crew*. Consulta la trazabilidad completa en [docs/ORIGEN_DE_DATOS.md](docs/ORIGEN_DE_DATOS.md).
-- **Datos Satelitales:** Agradecemos al programa NASA LANCE FIRMS operado por el NASA Goddard Space Flight Center / ESDIS.
-- **Cartografía de Refugios:** Catálogo oficial auditado de cuarteles de Bomberos Voluntarios y Policía de San Luis y Córdoba.
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.

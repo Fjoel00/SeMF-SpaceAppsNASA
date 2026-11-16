@@ -6,6 +6,12 @@ import type {
   SafeShelter,
   ThermalDetectionPoint,
 } from '../../types/semf';
+import {
+  BasemapMode,
+  createMapLibreStyle,
+  ESRI_ATTRIBUTION,
+  OSM_ATTRIBUTION,
+} from '../../map/mapStyle';
 
 interface TacticalMapCanvasProps {
   events: FireFrontEvent[];
@@ -18,12 +24,12 @@ interface TacticalMapCanvasProps {
   onSelectEvent?: (ev: FireFrontEvent) => void;
   onMapClickCoordinates?: (lat: number, lon: number) => void;
   heightClass?: string;
-  defaultBasemap?: 'satellite' | 'dark' | 'streets';
+  defaultBasemap?: BasemapMode;
 }
 
 export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
   events,
-  points = [],
+  points: _points = [],
   shelters = [],
   routes = [],
   conservativeCorridor = null,
@@ -36,7 +42,8 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const [activeBasemap, setActiveBasemap] = useState<'satellite' | 'dark' | 'streets'>(defaultBasemap);
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const [activeBasemap, setActiveBasemap] = useState<BasemapMode>(defaultBasemap);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -44,51 +51,10 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
     // Fuentes 100% Libres y Públicas (Zero API Key)
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          esriSatellite: {
-            type: 'raster',
-            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-            tileSize: 256,
-            attribution: '&copy; ESRI & NASA World Imagery',
-          },
-          esriDark: {
-            type: 'raster',
-            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
-            tileSize: 256,
-            attribution: '&copy; ESRI Dark Canvas',
-          },
-          osmStreets: {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap contributors',
-          },
-        },
-        layers: [
-          {
-            id: 'basemap-satellite',
-            type: 'raster',
-            source: 'esriSatellite',
-            layout: { visibility: defaultBasemap === 'satellite' ? 'visible' : 'none' },
-          },
-          {
-            id: 'basemap-dark',
-            type: 'raster',
-            source: 'esriDark',
-            layout: { visibility: defaultBasemap === 'dark' ? 'visible' : 'none' },
-          },
-          {
-            id: 'basemap-streets',
-            type: 'raster',
-            source: 'osmStreets',
-            layout: { visibility: defaultBasemap === 'streets' ? 'visible' : 'none' },
-          },
-        ],
-      },
+      style: createMapLibreStyle(defaultBasemap),
       center: [-65.45, -32.35],
       zoom: 7.4,
+      attributionControl: false, // Control manual estilizado abajo
     });
 
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
@@ -103,19 +69,41 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
     });
 
     mapRef.current = map;
+
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, [onMapClickCoordinates, defaultBasemap]);
 
+  // Marcador de ubicación del usuario
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (userOrigin) {
+      if (!userMarkerRef.current) {
+        const el = document.createElement('div');
+        el.className =
+          'w-5 h-5 rounded-full bg-cyan-400 border-2 border-white shadow-lg shadow-cyan-400/50 animate-pulse';
+        userMarkerRef.current = new maplibregl.Marker({ element: el })
+          .setLngLat([userOrigin.lon, userOrigin.lat])
+          .addTo(map);
+      } else {
+        userMarkerRef.current.setLngLat([userOrigin.lon, userOrigin.lat]);
+      }
+    } else if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+  }, [userOrigin]);
+
   // Conmutador interactivo de capas base libres (Zero API Key)
-  const switchBasemap = (type: 'satellite' | 'dark' | 'streets') => {
+  const switchBasemap = (type: BasemapMode) => {
     setActiveBasemap(type);
     const map = mapRef.current;
     if (!map) return;
     map.setLayoutProperty('basemap-satellite', 'visibility', type === 'satellite' ? 'visible' : 'none');
-    map.setLayoutProperty('basemap-dark', 'visibility', type === 'dark' ? 'visible' : 'none');
     map.setLayoutProperty('basemap-streets', 'visibility', type === 'streets' ? 'visible' : 'none');
   };
 
@@ -133,93 +121,81 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
   }, [selectedEventId, events]);
 
   return (
-    <div className={`relative w-full ${heightClass} bg-[#18181B] rounded-3xl overflow-hidden border border-[#333338] shadow-2xl`}>
+    <div className={`relative w-full ${heightClass} bg-[#10121A] rounded-2xl overflow-hidden border border-[#252A36] shadow-xl`}>
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
-      {/* SELECTOR EN CÁPSULA DE CAPA BASE (ZERO API KEY) */}
-      <div className="absolute top-3 right-3 z-20 flex items-center bg-[#252525]/90 backdrop-blur-md p-1 rounded-full border border-[#38383E] shadow-lg">
+      {/* CONMUTADOR CALLE / SATÉLITE (ZERO API KEY) */}
+      <div
+        className="absolute top-3 right-3 z-20 flex items-center bg-[#161922]/90 backdrop-blur-md p-1 rounded-xl border border-[#2B3242] shadow-lg"
+        role="group"
+        aria-label="Selector de mapa base"
+      >
+        <button
+          onClick={() => switchBasemap('streets')}
+          aria-pressed={activeBasemap === 'streets'}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+            activeBasemap === 'streets'
+              ? 'bg-[#FF6117] text-white shadow-md'
+              : 'text-[#9BA3AF] hover:text-white'
+          }`}
+        >
+          🗺️ Calle
+        </button>
         <button
           onClick={() => switchBasemap('satellite')}
-          className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
+          aria-pressed={activeBasemap === 'satellite'}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
             activeBasemap === 'satellite'
               ? 'bg-[#FF6117] text-white shadow-md'
-              : 'text-[#EAEAEA] hover:text-white'
+              : 'text-[#9BA3AF] hover:text-white'
           }`}
         >
           🛰️ Satélite
         </button>
-        <button
-          onClick={() => switchBasemap('dark')}
-          className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
-            activeBasemap === 'dark'
-              ? 'bg-[#FF6117] text-white shadow-md'
-              : 'text-[#EAEAEA] hover:text-white'
-          }`}
-        >
-          🌑 Oscuro
-        </button>
-        <button
-          onClick={() => switchBasemap('streets')}
-          className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
-            activeBasemap === 'streets'
-              ? 'bg-[#FF6117] text-white shadow-md'
-              : 'text-[#EAEAEA] hover:text-white'
-          }`}
-        >
-          🗺️ Calles
-        </button>
       </div>
 
-      {/* LEYENDA TÁCTICA FLOTANTE EN CÁPSULA MODERNA */}
-      <div className="absolute bottom-3 left-3 z-10 bg-[#252525]/95 backdrop-blur-md border border-[#38383E] rounded-2xl px-4 py-2.5 text-[11px] font-mono shadow-xl space-y-1">
-        <div className="text-[#EAEAEA] font-bold uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+      {/* LEYENDA TÁCTICA Y ATRIBUCIÓN SIEMPRE VISIBLE */}
+      <div className="absolute bottom-3 left-3 z-10 bg-[#161922]/95 backdrop-blur-md border border-[#2B3242] rounded-xl px-3.5 py-2 text-[11px] font-mono shadow-xl space-y-1">
+        <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#FF6117] animate-ping" />
-          Telemetría Espacial y Vial Activa
-        </div>
-        <div className="flex items-center gap-3.5 flex-wrap">
-          <span className="flex items-center gap-1 text-[#FF6117] font-semibold">
-            ● VIIRS 375m ({points.filter((p) => p.sensor_family === 'VIIRS').length})
-          </span>
-          <span className="flex items-center gap-1 text-red-400 font-semibold">
-            ● MODIS 1km ({points.filter((p) => p.sensor_family === 'MODIS').length})
-          </span>
-          <span className="flex items-center gap-1 text-amber-300 font-semibold">
-            ▲ Frentes ({events.length})
-          </span>
-          {shelters.length > 0 && (
-            <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-              ■ Refugios ({shelters.length})
-            </span>
-          )}
+          <span className="text-white font-bold">Frentes activos: {events.length}</span>
+          <span className="text-slate-500">•</span>
+          <span className="text-emerald-400">Refugios: {shelters.length}</span>
           {routes.length > 0 && (
-            <span className="flex items-center gap-1 text-cyan-300 font-semibold">
-              ━ Rutas ({routes.length})
-            </span>
+            <>
+              <span className="text-slate-500">•</span>
+              <span className="text-cyan-400">Rutas: {routes.length}</span>
+            </>
           )}
           {conservativeCorridor && (
-            <span className="flex items-center gap-1 text-orange-300 font-semibold">
-              ⇢ Escape Flanco
-            </span>
+            <>
+              <span className="text-slate-500">•</span>
+              <span className="text-orange-400">Escape de flanco activo</span>
+            </>
           )}
+        </div>
+        <div className="text-[10px] text-[#9BA3AF] pt-0.5 border-t border-[#252A36]">
+          Atribución: {activeBasemap === 'satellite' ? ESRI_ATTRIBUTION : OSM_ATTRIBUTION}
         </div>
       </div>
 
-      {/* SELECTOR RÁPIDO DE FRENTES EN PÍLDORAS REDONDEADAS */}
+      {/* SELECTOR RÁPIDO DE FRENTES */}
       {events.length > 0 && onSelectEvent && (
-        <div className="absolute top-3 left-3 z-10 flex items-center gap-2 overflow-x-auto pb-1 max-w-[calc(100%-250px)]">
-          {events.slice(0, 5).map((ev) => {
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-2 overflow-x-auto pb-1 max-w-[calc(100%-240px)]">
+          {events.slice(0, 6).map((ev) => {
             const isSel = ev.event_id === selectedEventId;
             return (
               <button
                 key={ev.event_id}
                 onClick={() => onSelectEvent(ev)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-mono font-semibold whitespace-nowrap border transition shadow-md ${
+                aria-label={`Seleccionar frente ${ev.event_id}`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold whitespace-nowrap border transition shadow-md ${
                   isSel
                     ? 'bg-[#FF6117] text-white border-[#FF6117]'
-                    : 'bg-[#252525]/90 text-[#EAEAEA] border-[#38383E] hover:border-[#FF6117]/60'
+                    : 'bg-[#161922]/90 text-[#EAEAEA] border-[#2B3242] hover:border-[#FF6117]/60'
                 }`}
               >
-                {ev.event_id} • {ev.frp_peak_mw} MW
+                {ev.location_name} • {Math.round(ev.frp_peak_mw)} MW
               </button>
             );
           })}

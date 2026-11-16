@@ -53,6 +53,12 @@ def create_fastapi_app():
             allow_headers=["*"],
         )
 
+        @app.api_route("/health", methods=["GET"])
+        @app.api_route("/api/health", methods=["GET"])
+        async def health_gateway(request: Request):
+            status, payload = dispatch_api_request("GET", "/api/v1/health", {})
+            return JSONResponse(status_code=status, content=payload)
+
         @app.api_route("/api/v1/{rest_of_path:path}", methods=["GET", "POST", "PUT", "DELETE"])
         async def api_gateway(request: Request, rest_of_path: str):
             body: Dict[str, Any] = {}

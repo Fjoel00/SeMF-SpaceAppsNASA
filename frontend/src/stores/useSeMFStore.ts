@@ -61,7 +61,7 @@ interface SeMFStore {
 }
 
 export const useSeMFStore = create<SeMFStore>((set) => ({
-  activeView: 'dashboard',
+  activeView: 'historical',
   setActiveView: (view) => set({ activeView: view }),
 
   selectedEvent: null,

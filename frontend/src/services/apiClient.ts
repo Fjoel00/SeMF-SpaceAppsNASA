@@ -62,6 +62,7 @@ export const apiClient = {
     range_to: number;
     week: number;
     bbox?: string | null;
+    sensor?: 'all' | 'viirs' | 'modis';
   }) => {
     const q = new URLSearchParams({
       mode: params.mode,
@@ -72,6 +73,9 @@ export const apiClient = {
     });
     if (params.bbox) {
       q.set('bbox', params.bbox);
+    }
+    if (params.sensor) {
+      q.set('sensor', params.sensor);
     }
     return requestJson<HistoricalCalendarPayload>(
       `${API_BASE}/historical/calendar?${q.toString()}`
@@ -111,7 +115,10 @@ export const apiClient = {
     spread_features: Record<string, number>;
     segment_features: Record<string, number>;
   }) =>
-    requestJson<Record<string, unknown>>(`${API_BASE}/ml/predict-risk`, {
+    requestJson<{
+      spread_prediction?: { spread_speed_kmh: number; spread_intensity_mw_m?: number };
+      segment_risk_prediction?: { risk_probability: number; risk_percentage?: number };
+    }>(`${API_BASE}/ml/predict-risk`, {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

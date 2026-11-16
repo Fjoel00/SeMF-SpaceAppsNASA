@@ -3,20 +3,38 @@ import { MissionControlLayout } from './layouts/MissionControlLayout';
 import { apiClient } from './services/apiClient';
 import { useSeMFStore } from './stores/useSeMFStore';
 import type { ActiveFiresPayload, SafeShelter } from './types/semf';
-import { DashboardPage } from './features/dashboard/DashboardPage';
-import { MonitorPage } from './features/monitor/MonitorPage';
-import { TacticalConsolePage } from './features/tactical/TacticalConsolePage';
-import { EscapeRoutingPage } from './features/routing/EscapeRoutingPage';
 import { HistoricalCalendarPage } from './features/historical/HistoricalCalendarPage';
-import { MLAnalyticsPage } from './features/ml-analytics/MLAnalyticsPage';
-import { SheltersPage } from './features/shelters/SheltersPage';
-import { SettingsPage } from './features/settings/SettingsPage';
+import { TacticalConsolePage } from './features/tactical/TacticalConsolePage';
+import { IntelligencePage } from './features/intelligence/IntelligencePage';
 
 export const App: React.FC = () => {
-  const { activeView, setSelectedEvent } = useSeMFStore();
+  const { activeView, setActiveView, setSelectedEvent } = useSeMFStore();
   const [firesData, setFiresData] = useState<ActiveFiresPayload | null>(null);
   const [shelters, setShelters] = useState<SafeShelter[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Redirección determinista de URLs heredadas a las 3 pestañas principales
+  useEffect(() => {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('calendar') || path.includes('historico')) {
+      setActiveView('historical');
+    } else if (
+      path.includes('escape') ||
+      path.includes('routing') ||
+      path.includes('shelters') ||
+      path.includes('monitor') ||
+      path.includes('dashboard') ||
+      path.includes('tactical')
+    ) {
+      setActiveView('tactical');
+    } else if (
+      path.includes('ml') ||
+      path.includes('settings') ||
+      path.includes('intelligence')
+    ) {
+      setActiveView('intelligence');
+    }
+  }, [setActiveView]);
 
   const loadAllData = useCallback(async () => {
     setIsLoading(true);
@@ -41,28 +59,25 @@ export const App: React.FC = () => {
     loadAllData();
   }, [loadAllData]);
 
+  // Resolución de la pestaña activa (con redirección de vistas heredadas)
+  const isHistorical = activeView === 'historical';
+  const isIntelligence =
+    activeView === 'intelligence' ||
+    activeView === 'settings' ||
+    activeView === 'ml-analytics';
+  const isTactical = !isHistorical && !isIntelligence;
+
   return (
     <MissionControlLayout
       firesData={firesData}
       isLoading={isLoading}
       onRefreshData={loadAllData}
     >
-      {activeView === 'dashboard' && (
-        <DashboardPage firesData={firesData} shelters={shelters} />
+      {isHistorical && <HistoricalCalendarPage />}
+      {isTactical && (
+        <TacticalConsolePage firesData={firesData} shelters={shelters} />
       )}
-      {activeView === 'monitor' && <MonitorPage firesData={firesData} />}
-      {activeView === 'tactical' && (
-        <TacticalConsolePage firesData={firesData} />
-      )}
-      {activeView === 'routing' && (
-        <EscapeRoutingPage firesData={firesData} shelters={shelters} />
-      )}
-      {activeView === 'historical' && <HistoricalCalendarPage />}
-      {activeView === 'ml-analytics' && <MLAnalyticsPage />}
-      {activeView === 'shelters' && <SheltersPage shelters={shelters} />}
-      {activeView === 'settings' && (
-        <SettingsPage onSettingsUpdated={loadAllData} />
-      )}
+      {isIntelligence && <IntelligencePage onSettingsUpdated={loadAllData} />}
     </MissionControlLayout>
   );
 };

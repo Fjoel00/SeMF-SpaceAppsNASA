@@ -62,7 +62,7 @@ def dispatch_api_request(
         if method == "GET" and path in ("/openapi.json", "/api/v1/openapi.json"):
             return 200, build_openapi_spec()
 
-        if method == "GET" and path == "/api/v1/health":
+        if method == "GET" and path in ("/api/v1/health", "/api/health", "/health"):
             infra = db_manager.get_health_status()
             return 200, {
                 "status": "healthy",
@@ -105,16 +105,23 @@ def dispatch_api_request(
                 "kpis": data["kpis"],
             }
 
+        if method == "GET" and path == "/api/v1/historical/grid":
+            return 200, historical_service.get_raw_grid()
+
         if method == "POST" and path == "/api/v1/fires/simulate":
-            return 200, orchestrator.simulate_operational_scenario(body)
+            return 403, {
+                "error": "Simulador deshabilitado",
+                "detail": "Regla de cero datos inyectados activada: Prohibida la inyección de incendios simulados en la plataforma operativa.",
+            }
 
         if method == "GET" and path == "/api/v1/historical/calendar":
             mode = query.get("mode", "annual")
             year = int(query.get("year", "2025"))
-            range_from = int(query.get("range_from", "2012"))
+            range_from = int(query.get("range_from", "2000"))
             range_to = int(query.get("range_to", "2025"))
             bbox = query.get("bbox")
             week = int(query.get("week", "36"))
+            sensor = query.get("sensor", "all")
             return 200, historical_service.query_calendar(
                 mode=mode,
                 year=year,
@@ -122,6 +129,7 @@ def dispatch_api_request(
                 range_to=range_to,
                 bbox=bbox,
                 selected_week=week,
+                sensor=sensor,
             )
 
         if method == "POST" and path == "/api/v1/routing/evacuate":

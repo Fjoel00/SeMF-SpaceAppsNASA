@@ -3,13 +3,14 @@
  */
 
 export type NavigationViewId =
+  | 'historical'
+  | 'tactical'
+  | 'intelligence'
   | 'dashboard'
   | 'monitor'
-  | 'tactical'
   | 'routing'
-  | 'historical'
-  | 'ml-analytics'
   | 'shelters'
+  | 'ml-analytics'
   | 'settings';
 
 export interface WeatherTelemetry {
@@ -250,6 +251,8 @@ export interface HistoricalCalendarPayload {
     } | null;
     active_cells_count: number;
     total_cells_count: number;
+    current_closed_week_2026?: number;
+    selected_sensor?: string;
     generated_at_utc: string;
   };
   kpis: {
@@ -279,6 +282,21 @@ export interface HistoricalCalendarPayload {
     total_harmonized_eq: number;
     period_eq: number;
     period_frp_mw: number;
+  }>;
+  heatmap?: Array<{
+    year: number;
+    is_partial: boolean;
+    annual_total: number;
+    weeks: Array<{
+      week: number;
+      year: number;
+      count: number;
+      z_score: number;
+      viirs: number;
+      modis: number;
+      frp_mw: number;
+      pending: boolean;
+    }>;
   }>;
   yearly_breakdown: Array<{ year: number; detections: number }>;
 }

@@ -17,6 +17,7 @@ Verifica rigurosamente los 8 escenarios exigidos en la especificación maestra:
 import os
 import sys
 import unittest
+from datetime import datetime, timezone
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if ROOT_DIR not in sys.path:
@@ -60,6 +61,7 @@ class TestIntelligentRoutingEngine(unittest.TestCase):
         """Caso 2: Ruta con un foco cercano (fuera del buffer duro pero dentro de zona de precaución)."""
         # Origen (-33.15, -66.064) -> Destino Bomberos El Trapiche (-33.1095, -66.064)
         # Colocamos un foco lateral a ~1.5 km al este (con safety_buffer_km = 1.0 km)
+        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         nearby_fire = [
             {
                 "event_id": "FIRE_NEARBY_01",
@@ -67,7 +69,7 @@ class TestIntelligentRoutingEngine(unittest.TestCase):
                 "centroid_lon": -66.0465,
                 "frp_peak_mw": 180.0,
                 "projected_azimuth_deg": 90.0,
-                "last_detected": "2026-11-15 20:00:00",
+                "last_detected": now_str,
                 "polygon_coords": [
                     [-33.128, -66.048],
                     [-33.128, -66.045],
@@ -114,6 +116,7 @@ class TestIntelligentRoutingEngine(unittest.TestCase):
         """Caso 3: Incendio directamente sobre el camino directo -> Bloquea la directa y recomienda desvío."""
         # Origen (-33.1600, -66.0640) -> Destino (-33.1095, -66.0640)
         # Colocamos incendio pequeño exactamente en la mitad del camino directo (-33.1350, -66.0640)
+        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         blocking_fire = [
             {
                 "event_id": "FIRE_DIRECT_CUT",
@@ -121,7 +124,7 @@ class TestIntelligentRoutingEngine(unittest.TestCase):
                 "centroid_lon": -66.0640,
                 "frp_peak_mw": 240.0,
                 "projected_azimuth_deg": 0.0,
-                "last_detected": "2026-11-15 20:00:00",
+                "last_detected": now_str,
                 "polygon_coords": [
                     [-33.133, -66.066],
                     [-33.133, -66.062],
@@ -171,6 +174,7 @@ class TestIntelligentRoutingEngine(unittest.TestCase):
     def test_case_5_no_safe_route_available_conservative_fallback(self):
         """Caso 5: Ninguna ruta segura disponible -> Bloquea todas y activa corredor conservador de flanco."""
         # Incendio rodea completamente el punto de origen (-33.255, -65.953)
+        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         enclosing_fire = [
             {
                 "event_id": "FIRE_MEGA_ENCLOSING",
@@ -178,7 +182,7 @@ class TestIntelligentRoutingEngine(unittest.TestCase):
                 "centroid_lon": -65.9530,
                 "frp_peak_mw": 650.0,
                 "projected_azimuth_deg": 20.0,
-                "last_detected": "2026-11-15 20:00:00",
+                "last_detected": now_str,
                 "polygon_coords": [
                     [-33.220, -65.990],
                     [-33.220, -65.910],
