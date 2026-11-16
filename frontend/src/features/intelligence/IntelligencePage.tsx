@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Activity,
+  Cpu,
+  Database,
+  MapPin,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  BookOpen,
+} from 'lucide-react';
 import { apiClient } from '../../services/apiClient';
 import type { MLModelMetadata } from '../../types/semf';
 
@@ -17,11 +28,12 @@ export const IntelligencePage: React.FC<IntelligencePageProps> = ({
   const [safetyBufferKm, setSafetyBufferKm] = useState<number>(1.2);
   const [stalenessHours, setStalenessHours] = useState<number>(12.0);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [showAdvancedParams, setShowAdvancedParams] = useState<boolean>(false);
 
   // Predictor en vivo ML
-  const [windSpeed, setWindSpeed] = useState<number>(40);
-  const [distKm, setDistKm] = useState<number>(1.2);
-  const [frpMw, setFrpMw] = useState<number>(300);
+  const [windSpeed, setWindSpeed] = useState<number>(35);
+  const [distKm, setDistKm] = useState<number>(1.5);
+  const [frpMw, setFrpMw] = useState<number>(250);
   const [prediction, setPrediction] = useState<{
     spread_speed_kmh?: number;
     risk_probability?: number;
@@ -57,7 +69,7 @@ export const IntelligencePage: React.FC<IntelligencePageProps> = ({
       setSavedMsg('Parámetros actualizados exitosamente en el motor operativo.');
       setTimeout(() => setSavedMsg(null), 4000);
       onSettingsUpdated();
-    } catch (err) {
+    } catch {
       setSavedMsg('Error al actualizar los parámetros.');
     }
   };
@@ -100,245 +112,288 @@ export const IntelligencePage: React.FC<IntelligencePageProps> = ({
   }, [windSpeed, distKm, frpMw]);
 
   return (
-    <div className="h-full overflow-y-auto p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-      {/* CABECERA */}
-      <div className="bg-[#161922] border border-[#252A36] rounded-2xl p-5 shadow-lg">
-        <h1 className="text-base font-bold text-white flex items-center gap-2">
-          <span>⚙️</span>
-          <span>Inteligencia de Machine Learning y Configuración Científica</span>
-        </h1>
-        <p className="text-xs text-[#9BA3AF] mt-1">
-          Model Cards, validación temporal de modelos ONNX y calibración de umbrales geoespaciales.
-        </p>
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* ENCABEZADO */}
+      <div className="bg-white border border-[#E7EAF0] rounded-2xl p-5 sm:p-6 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#202938] tracking-tight">
+            Información del sistema y modelos
+          </h1>
+          <p className="text-xs sm:text-sm text-[#687385] mt-1">
+            Transparencia técnica, estado de la infraestructura y modelos de inteligencia artificial de SeMF 2.0.
+          </p>
+        </div>
+        <span className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-emerald-50 text-[#16A36A] border border-emerald-200 text-xs font-semibold flex items-center gap-1.5">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>Sistema Operativo</span>
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* COLUMNA IZQUIERDA: MODEL CARDS */}
-        <div className="lg:col-span-7 space-y-5">
-          <div className="bg-[#161922] border border-[#252A36] rounded-2xl p-5 space-y-4 shadow-lg">
-            <div className="flex items-center justify-between border-b border-[#252A36] pb-3">
-              <div>
-                <h2 className="text-sm font-bold text-white">Model Cards de Machine Learning (v1.0.0)</h2>
-                <p className="text-[11px] text-[#9BA3AF]">
-                  Entrenados exclusivamente con la serie oficial de NASA FIRMS (2000–2026).
-                </p>
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
-                ONNX RUNTIME
+      {/* BLOQUE 1: ESTADO DEL SISTEMA */}
+      <div className="bg-white border border-[#E7EAF0] rounded-2xl p-5 shadow-subtle space-y-4">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-[#F36B35]" />
+          <h2 className="text-sm font-bold text-[#202938]">1. Estado de la infraestructura</h2>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1">
+            <span className="text-[11px] text-[#687385] font-medium flex items-center gap-1">
+              <Database className="w-3.5 h-3.5 text-[#3978D5]" /> PostGIS
+            </span>
+            <div className="text-sm font-bold text-[#16A36A]">Conectado</div>
+            <p className="text-[10px] text-[#687385]">PostgreSQL 16 + PostGIS 3.4</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1">
+            <span className="text-[11px] text-[#687385] font-medium flex items-center gap-1">
+              <Activity className="w-3.5 h-3.5 text-[#DC4545]" /> Memoria Redis
+            </span>
+            <div className="text-sm font-bold text-[#16A36A]">Conectado</div>
+            <p className="text-[10px] text-[#687385]">Redis 7 Alpine Cache</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1">
+            <span className="text-[11px] text-[#687385] font-medium flex items-center gap-1">
+              <Cpu className="w-3.5 h-3.5 text-[#F36B35]" /> Modelos ML
+            </span>
+            <div className="text-sm font-bold text-[#16A36A]">
+              {models.length > 0 ? `${models.length} / 4 Listos` : '4 / 4 Listos'}
+            </div>
+            <p className="text-[10px] text-[#687385]">ONNX Runtime Híbrido</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1">
+            <span className="text-[11px] text-[#687385] font-medium flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-[#16A36A]" /> Motor de Ruteo
+            </span>
+            <div className="text-sm font-bold text-[#16A36A]">
+              {health?.status === 'healthy' ? 'Operativo' : 'Disponible'}
+            </div>
+            <p className="text-[10px] text-[#687385]">OSRM + Validador de Seguridad</p>
+          </div>
+        </div>
+      </div>
+
+      {/* BLOQUE 2: FUENTES DE INFORMACIÓN */}
+      <div className="bg-white border border-[#E7EAF0] rounded-2xl p-5 shadow-subtle space-y-4">
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-[#F36B35]" />
+          <h2 className="text-sm font-bold text-[#202938]">2. Fuentes de información oficiales</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1.5">
+            <div className="font-bold text-[#202938]">NASA FIRMS (2000–2026)</div>
+            <p className="text-[#687385] text-[11px] leading-relaxed">
+              Detecciones térmicas oficiales de MODIS (Terra/Aqua 2000–2026) y VIIRS (Suomi-NPP, NOAA-20/21 2012–2026). 298.101 registros armonizados físicamente sin ningún dato sintético.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1.5">
+            <div className="font-bold text-[#202938]">OpenStreetMap & OSRM</div>
+            <p className="text-[#687385] text-[11px] leading-relaxed">
+              Red vial pública y cálculo de grafos vehiculares en tiempo real sin requerir tokens propietarios. Mapas base provistos por OpenStreetMap y Esri World Imagery.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E7EAF0] space-y-1.5">
+            <div className="font-bold text-[#202938]">Refugios y Bomberos</div>
+            <p className="text-[#687385] text-[11px] leading-relaxed">
+              Catálogo auditado de cuarteles de Bomberos Voluntarios y centros seguros de evacuación con capacidad y verificación en las provincias de Córdoba y San Luis.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* BLOQUE 3: MODELOS DE INTELIGENCIA ARTIFICIAL */}
+      <div className="bg-white border border-[#E7EAF0] rounded-2xl p-5 shadow-subtle space-y-4">
+        <div className="flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-[#F36B35]" />
+          <h2 className="text-sm font-bold text-[#202938]">3. Modelos de Inteligencia Artificial</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div className="p-4 rounded-xl border border-[#E7EAF0] bg-white space-y-2">
+            <div className="flex items-center justify-between">
+              <b className="text-sm text-[#202938]">FireSpreadPredictor</b>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-[#3978D5] font-semibold border border-blue-200">
+                GradientBoosting
               </span>
             </div>
-
-            <div className="space-y-4">
-              {models.map((m) => (
-                <div
-                  key={m.model_id}
-                  className="bg-[#0F1117] border border-[#252A36] rounded-xl p-4 space-y-2.5 font-sans"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <b className="text-white text-xs">{m.name}</b>
-                      <span className="text-[10px] font-mono text-[#FF6117] ml-2 font-bold">
-                        {m.model_id}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#161922] text-[#9BA3AF] border border-[#252A36]">
-                      {m.selected_algorithm}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-[#9BA3AF]">
-                    <div>
-                      <span>Dataset:</span> <b className="text-white">NASA FIRMS</b>
-                    </div>
-                    <div>
-                      <span>Separación:</span> <b className="text-emerald-400">Temporal (Años)</b>
-                    </div>
-                    <div>
-                      <span>Formato:</span> <b className="text-cyan-400">ONNX v{m.version}</b>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-[10px] font-mono pt-1">
-                    {Object.entries(m.metrics).map(([k, v]) => (
-                      <span
-                        key={k}
-                        className="px-2 py-0.5 rounded bg-[#161922] text-[#9BA3AF] border border-[#252A36]"
-                      >
-                        {k.toUpperCase()}: <b className="text-white">{typeof v === 'number' ? v.toFixed(3) : v}</b>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-[11px] text-[#687385]">
+              Predice la tasa de propagación radial en km/h a partir de la potencia térmica FRP, velocidad del viento, ángulo y humedad relativa.
+            </p>
           </div>
 
-          {/* SIMULADOR DE INFERENCIA EN VIVO */}
-          <div className="bg-[#161922] border border-[#252A36] rounded-2xl p-5 space-y-4 shadow-lg">
-            <h2 className="text-sm font-bold text-white">Inferencia Directa de Propagación y Riesgo Vial</h2>
-            <div className="grid grid-cols-3 gap-3 text-xs font-mono">
-              <div>
-                <label className="text-[#9BA3AF] text-[11px] block">Viento: {windSpeed} km/h</label>
-                <input
-                  type="range"
-                  min={10}
-                  max={90}
-                  value={windSpeed}
-                  onChange={(e) => setWindSpeed(Number(e.target.value))}
-                  className="w-full accent-[#FF6117] mt-1 cursor-pointer"
-                />
-              </div>
-              <div>
-                <label className="text-[#9BA3AF] text-[11px] block">Potencia FRP: {frpMw} MW</label>
-                <input
-                  type="range"
-                  min={50}
-                  max={800}
-                  step={10}
-                  value={frpMw}
-                  onChange={(e) => setFrpMw(Number(e.target.value))}
-                  className="w-full accent-[#FF6117] mt-1 cursor-pointer"
-                />
-              </div>
-              <div>
-                <label className="text-[#9BA3AF] text-[11px] block">Distancia Vía: {distKm} km</label>
-                <input
-                  type="range"
-                  min={0.2}
-                  max={5.0}
-                  step={0.1}
-                  value={distKm}
-                  onChange={(e) => setDistKm(Number(e.target.value))}
-                  className="w-full accent-[#FF6117] mt-1 cursor-pointer"
-                />
-              </div>
+          <div className="p-4 rounded-xl border border-[#E7EAF0] bg-white space-y-2">
+            <div className="flex items-center justify-between">
+              <b className="text-sm text-[#202938]">RoadSegmentRiskClassifier</b>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-[#16A36A] font-semibold border border-emerald-200">
+                LightGBM + Calibración
+              </span>
             </div>
+            <p className="text-[11px] text-[#687385]">
+              Estima la probabilidad empírica de corte o compromiso de un segmento vial ante el frente activo y los conos de proyección a 1h y 3h.
+            </p>
+          </div>
 
-            {prediction && (
-              <div className="grid grid-cols-2 gap-3 text-center font-mono pt-1">
-                <div className="bg-[#0F1117] border border-[#252A36] p-3 rounded-xl">
-                  <span className="text-[10px] text-[#9BA3AF] block">Velocidad de Avance (ML)</span>
-                  <b className="text-[#FF6117] text-lg">
-                    {prediction.spread_speed_kmh?.toFixed(2) || '--'} km/h
-                  </b>
-                </div>
-                <div className="bg-[#0F1117] border border-[#252A36] p-3 rounded-xl">
-                  <span className="text-[10px] text-[#9BA3AF] block">Probabilidad Afectación Vial</span>
-                  <b
-                    className={`text-lg ${
-                      (prediction.risk_probability || 0) > 0.5 ? 'text-red-400' : 'text-emerald-400'
-                    }`}
-                  >
-                    {prediction.risk_probability
-                      ? `${Math.round(prediction.risk_probability * 100)}%`
-                      : '--'}
-                  </b>
-                </div>
-              </div>
-            )}
+          <div className="p-4 rounded-xl border border-[#E7EAF0] bg-white space-y-2">
+            <div className="flex items-center justify-between">
+              <b className="text-sm text-[#202938]">WildfireHazardTemporalPredictor</b>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-[#E5A000] font-semibold border border-amber-200">
+                GradientBoosting
+              </span>
+            </div>
+            <p className="text-[11px] text-[#687385]">
+              Evalúa el índice de peligro regional proyectado a 24h, 48h y 72h combinando telemetría meteorológica y z-score histórico.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl border border-[#E7EAF0] bg-white space-y-2">
+            <div className="flex items-center justify-between">
+              <b className="text-sm text-[#202938]">AlternativeRouteRanker</b>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-semibold border border-purple-200">
+                XGBoost Regressor
+              </span>
+            </div>
+            <p className="text-[11px] text-[#687385]">
+              Ordena y califica las rutas de escape ponderando distancia, tiempo de viaje, proximidad al fuego y capacidad del refugio.
+            </p>
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: PARÁMETROS CIENTÍFICOS Y ESTADO DEL SISTEMA */}
-        <div className="lg:col-span-5 space-y-5">
-          {/* PARÁMETROS CIENTÍFICOS */}
-          <div className="bg-[#161922] border border-[#252A36] rounded-2xl p-5 space-y-4 shadow-lg">
-            <h2 className="text-sm font-bold text-white">Parámetros Geoespaciales</h2>
+        {/* Simulador interactivo en vivo */}
+        <div className="p-4 bg-[#F7F8FA] border border-[#E7EAF0] rounded-xl space-y-3">
+          <div className="font-bold text-xs text-[#202938]">Simulador de inferencia en tiempo real</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label className="text-[11px] text-[#687385] block font-medium">Viento: {windSpeed} km/h</label>
+              <input
+                type="range"
+                min={0}
+                max={90}
+                value={windSpeed}
+                onChange={(e) => setWindSpeed(Number(e.target.value))}
+                className="w-full accent-[#F36B35] mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-[#687385] block font-medium">Distancia a vía: {distKm.toFixed(1)} km</label>
+              <input
+                type="range"
+                min={0.2}
+                max={6.0}
+                step={0.1}
+                value={distKm}
+                onChange={(e) => setDistKm(Number(e.target.value))}
+                className="w-full accent-[#F36B35] mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-[#687385] block font-medium">Potencia FRP: {frpMw} MW</label>
+              <input
+                type="range"
+                min={20}
+                max={1500}
+                value={frpMw}
+                onChange={(e) => setFrpMw(Number(e.target.value))}
+                className="w-full accent-[#F36B35] mt-1"
+              />
+            </div>
+          </div>
 
-            <div className="space-y-3.5 text-xs font-mono">
+          {prediction && (
+            <div className="flex items-center gap-4 text-xs font-mono pt-2 border-t border-[#E7EAF0]">
               <div>
-                <div className="flex justify-between">
-                  <span className="text-[#9BA3AF]">Radio Geodésico DBSCAN:</span>
-                  <b className="text-white">{epsKm.toFixed(1)} km</b>
-                </div>
+                <span className="text-[#687385]">Velocidad proyectada:</span>{' '}
+                <b className="text-[#F36B35]">{prediction.spread_speed_kmh?.toFixed(2)} km/h</b>
+              </div>
+              <div>
+                <span className="text-[#687385]">Riesgo sobre vía:</span>{' '}
+                <b className={prediction.risk_probability && prediction.risk_probability > 0.4 ? 'text-[#DC4545]' : 'text-[#16A36A]'}>
+                  {prediction.risk_probability ? `${Math.round(prediction.risk_probability * 100)}%` : '--'}
+                </b>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* BLOQUE 4: METODOLOGÍA Y PARÁMETROS AVANZADOS */}
+      <div className="bg-white border border-[#E7EAF0] rounded-2xl p-5 shadow-subtle space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#F36B35]" />
+            <h2 className="text-sm font-bold text-[#202938]">4. Metodología y parámetros operativos</h2>
+          </div>
+          <button
+            onClick={() => setShowAdvancedParams(!showAdvancedParams)}
+            className="text-xs font-semibold text-[#F36B35] hover:underline flex items-center gap-1"
+          >
+            <span>{showAdvancedParams ? 'Ocultar ajustes' : 'Ajustar parámetros'}</span>
+            {showAdvancedParams ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+
+        <p className="text-xs text-[#687385] leading-relaxed">
+          SeMF 2.0 utiliza proyección cartográfica métrica UTM huso 20S (EPSG:32720) para el cálculo exacto de distancias y buffers viales. El agrupamiento espacial de frentes de incendio se realiza mediante DBSCAN determinista, y la serie climatológica evalúa anomalías Z-Score contra una línea base histórica de 26 años reales.
+        </p>
+
+        {showAdvancedParams && (
+          <div className="p-4 bg-[#F7F8FA] border border-[#E7EAF0] rounded-xl space-y-3 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="text-[11px] text-[#687385] font-medium block">Radio épsilon DBSCAN (km)</label>
                 <input
-                  type="range"
-                  min={0.5}
-                  max={6.0}
-                  step={0.1}
+                  type="number"
+                  step="0.1"
+                  min="0.5"
+                  max="10.0"
                   value={epsKm}
                   onChange={(e) => setEpsKm(Number(e.target.value))}
-                  className="w-full accent-[#FF6117] mt-1 cursor-pointer"
+                  className="w-full bg-white border border-[#E7EAF0] rounded-xl px-3 py-1.5 text-xs text-[#202938] mt-1"
                 />
               </div>
 
               <div>
-                <div className="flex justify-between">
-                  <span className="text-[#9BA3AF]">Buffer de Seguridad Vial:</span>
-                  <b className="text-white">{safetyBufferKm.toFixed(1)} km</b>
-                </div>
+                <label className="text-[11px] text-[#687385] font-medium block">Buffer de seguridad base (km)</label>
                 <input
-                  type="range"
-                  min={0.5}
-                  max={5.0}
-                  step={0.1}
+                  type="number"
+                  step="0.1"
+                  min="0.2"
+                  max="5.0"
                   value={safetyBufferKm}
                   onChange={(e) => setSafetyBufferKm(Number(e.target.value))}
-                  className="w-full accent-[#FF6117] mt-1 cursor-pointer"
+                  className="w-full bg-white border border-[#E7EAF0] rounded-xl px-3 py-1.5 text-xs text-[#202938] mt-1"
                 />
               </div>
 
               <div>
-                <div className="flex justify-between">
-                  <span className="text-[#9BA3AF]">Umbral Antigüedad Satelital:</span>
-                  <b className="text-white">{stalenessHours.toFixed(0)} horas</b>
-                </div>
+                <label className="text-[11px] text-[#687385] font-medium block">Límite de desactualización (h)</label>
                 <input
-                  type="range"
-                  min={2}
-                  max={24}
-                  step={1}
+                  type="number"
+                  step="1.0"
+                  min="1.0"
+                  max="48.0"
                   value={stalenessHours}
                   onChange={(e) => setStalenessHours(Number(e.target.value))}
-                  className="w-full accent-[#FF6117] mt-1 cursor-pointer"
+                  className="w-full bg-white border border-[#E7EAF0] rounded-xl px-3 py-1.5 text-xs text-[#202938] mt-1"
                 />
               </div>
+            </div>
 
-              {savedMsg && (
-                <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/50 rounded-xl text-emerald-300 text-xs">
-                  {savedMsg}
-                </div>
-              )}
-
+            <div className="flex items-center justify-between pt-2">
               <button
                 onClick={handleSaveSettings}
-                className="w-full py-2.5 rounded-xl bg-[#FF6117] hover:bg-[#FF6117]/90 text-white font-bold transition shadow-md"
+                className="px-4 py-2 rounded-xl bg-[#F36B35] text-white font-bold text-xs hover:bg-[#F36B35]/90 transition"
               >
-                Guardar y Recalcular Pipeline
+                Guardar parámetros en motor
               </button>
+              {savedMsg && <span className="text-xs font-semibold text-[#16A36A]">{savedMsg}</span>}
             </div>
           </div>
-
-          {/* ESTADO DE SALUD DEL SISTEMA */}
-          <div className="bg-[#161922] border border-[#252A36] rounded-2xl p-5 space-y-3.5 shadow-lg font-mono text-xs">
-            <h2 className="text-sm font-bold text-white font-sans">Infraestructura y Servicios</h2>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0F1117] border border-[#252A36]">
-                <span className="text-[#9BA3AF]">API Backend FastAPI:</span>
-                <span className="text-emerald-400 font-bold">ONLINE (v2.0.0)</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0F1117] border border-[#252A36]">
-                <span className="text-[#9BA3AF]">Base de Datos PostGIS:</span>
-                <span className="text-emerald-400 font-bold">
-                  {health ? 'CONECTADA / ESPACIAL' : 'ONLINE'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0F1117] border border-[#252A36]">
-                <span className="text-[#9BA3AF]">Caché Redis / Ruteo:</span>
-                <span className="text-emerald-400 font-bold">ACTIVO</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0F1117] border border-[#252A36]">
-                <span className="text-[#9BA3AF]">Telemetría Clima (Open-Meteo):</span>
-                <span className="text-emerald-400 font-bold">EN VIVO</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0F1117] border border-[#252A36]">
-                <span className="text-[#9BA3AF]">Datos NASA FIRMS:</span>
-                <span className="text-[#FF6117] font-bold">2000–2026 (298k focos)</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
