@@ -10,7 +10,8 @@
     "build": "npm run build:client && npm run build:server",
     "preview": "vite preview --host --port 8090",
     "start": "node dist-server/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@turf/turf": "^6.5.0",
@@ -24,8 +25,10 @@
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

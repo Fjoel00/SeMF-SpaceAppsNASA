@@ -1,4 +1,5 @@
 import * as turf from '@turf/turf';
+import type { Feature, Polygon, MultiPolygon } from 'geojson';
 import { 
   ShelterFeature, ActiveHotspot, FireEventCluster, EvacuationRoute 
 } from '../types';
@@ -6,14 +7,14 @@ import { calculateDistanceKm } from './sosMessageBuilder';
 
 export interface FireBufferGeometry {
   type: 'FeatureCollection';
-  features: turf.Feature<turf.Polygon | turf.MultiPolygon>[];
+  features: Feature<Polygon | MultiPolygon>[];
 }
 
 export function generateFireBuffers(
   hotspots: (ActiveHotspot | FireEventCluster)[],
   bufferKm = 3.0
 ): FireBufferGeometry {
-  const bufferedFeatures: turf.Feature<turf.Polygon | turf.MultiPolygon>[] = [];
+  const bufferedFeatures: Feature<Polygon | MultiPolygon>[] = [];
 
   for (const item of hotspots) {
     const lat = 'centroid_lat' in item ? item.centroid_lat : item.lat;
