@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-server
+.vite
+.env
+.env.local
+.git
+.gitignore
+*.log

@@ -1,95 +1,21 @@
 services:
-  semf-db:
-    image: postgis/postgis:16-3.4-alpine
-    container_name: semf-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-semf_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-semf_secure_pass}
-      POSTGRES_DB: ${POSTGRES_DB:-semf_geodb}
-    volumes:
-      - semf_pgdata:/var/lib/postgresql/data
-      - ./infrastructure/database/01_init_postgis.sql:/docker-entrypoint-initdb.d/01_init_postgis.sql:ro
-    networks:
-      - semf_internal_net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-semf_user} -d ${POSTGRES_DB:-semf_geodb}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  semf-redis:
-    image: redis:7-alpine
-    container_name: semf-redis
-    restart: unless-stopped
-    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
-    volumes:
-      - semf_redisdata:/data
-    networks:
-      - semf_internal_net
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
-  semf-backend:
+  semf-mobile:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: semf-backend
-    restart: unless-stopped
-    environment:
-      APP_ENV: ${APP_ENV:-production}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-semf_user}:${POSTGRES_PASSWORD:-semf_secure_pass}@semf-db:5432/${POSTGRES_DB:-semf_geodb}
-      REDIS_URL: redis://semf-redis:6379/0
-      FIRMS_MAP_KEY: ${FIRMS_MAP_KEY:-}
-      USE_SYNTHETIC_DATA: ${USE_SYNTHETIC_DATA:-false}
-      OSRM_BASE_URL: ${OSRM_BASE_URL:-https://router.project-osrm.org}
-      DEFAULT_BBOX: ${DEFAULT_BBOX:--66.0,-33.5,-63.5,-31.0}
-      DBSCAN_EPS_KM: ${DBSCAN_EPS_KM:-2.5}
-      DBSCAN_MIN_SAMPLES: ${DBSCAN_MIN_SAMPLES:-2}
-      DEFAULT_SAFETY_BUFFER_KM: ${DEFAULT_SAFETY_BUFFER_KM:-1.2}
-      STALENESS_THRESHOLD_HOURS: ${STALENESS_THRESHOLD_HOURS:-12.0}
-    volumes:
-      - ./data:/app/data
-      - ./ml/artifacts:/app/ml/artifacts
-    depends_on:
-      semf-db:
-        condition: service_healthy
-      semf-redis:
-        condition: service_healthy
-    networks:
-      - semf_internal_net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-
-  semf-frontend:
-    build:
-      context: ./frontend
+      context: ./mobile
       dockerfile: Dockerfile
-    container_name: semf-frontend
+    container_name: semf-mobile
     restart: unless-stopped
     ports:
-      - "${PUBLIC_PORT:-8090}:80"
-    depends_on:
-      semf-backend:
-        condition: service_healthy
-    networks:
-      - semf_internal_net
+      - "${PORT:-8090}:8090"
+    environment:
+      - PORT=8090
+      - FIRMS_MAP_KEY=${FIRMS_MAP_KEY:-}
+      - ROUTING_PROVIDER=${ROUTING_PROVIDER:-static_fallback}
+      - ORS_API_KEY=${ORS_API_KEY:-}
+      - DEFAULT_BBOX=${DEFAULT_BBOX:--66.0,-33.5,-63.5,-31.0}
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/ || exit 1"]
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:8090/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
       interval: 15s
       timeout: 5s
-      retries: 5
-
-networks:
-  semf_internal_net:
-    driver: bridge
-
-volumes:
-  semf_pgdata:
-  semf_redisdata:
+      retries: 3
+      start_period: 5s

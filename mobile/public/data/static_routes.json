@@ -1,0 +1,88 @@
+{
+  "generated_at_utc": "2026-11-15T22:00:00Z",
+  "description": "Rutas estáticas precalculadas de evacuación de respaldo ante caída de red o falta de clave de API vial",
+  "routes": [
+    {
+      "id": "STATIC-SL-001",
+      "locality": "El Trapiche / La Florida",
+      "origin": [-66.0640, -33.1095],
+      "destination": [-65.9870, -33.1180],
+      "shelterId": "SHL-SL-002",
+      "shelterName": "Centro Operativo Defensa Civil La Florida",
+      "shelterCategory": "CIVIL_DEFENSE",
+      "distanceKm": 11.4,
+      "durationMin": 16,
+      "coordinates": [
+        [-66.0640, -33.1095],
+        [-66.0420, -33.1110],
+        [-66.0150, -33.1150],
+        [-65.9870, -33.1180]
+      ]
+    },
+    {
+      "id": "STATIC-SL-002",
+      "locality": "Potrero de los Funes / Juana Koslay",
+      "origin": [-66.2300, -33.2250],
+      "destination": [-66.2850, -33.2720],
+      "shelterId": "SHL-SL-004",
+      "shelterName": "Hospital de Referencia Juana Koslay",
+      "shelterCategory": "HOSPITAL",
+      "distanceKm": 9.2,
+      "durationMin": 14,
+      "coordinates": [
+        [-66.2300, -33.2250],
+        [-66.2480, -33.2410],
+        [-66.2650, -33.2590],
+        [-66.2850, -33.2720]
+      ]
+    },
+    {
+      "id": "STATIC-SL-003",
+      "locality": "Villa de Merlo / Comechingones",
+      "origin": [-65.0120, -32.3480],
+      "destination": [-65.0180, -32.3550],
+      "shelterId": "SHL-SL-005",
+      "shelterName": "Cuartel Bomberos Voluntarios Villa de Merlo",
+      "shelterCategory": "FIRE_STATION",
+      "distanceKm": 4.5,
+      "durationMin": 8,
+      "coordinates": [
+        [-65.0120, -32.3480],
+        [-65.0150, -32.3510],
+        [-65.0180, -32.3550]
+      ]
+    },
+    {
+      "id": "STATIC-CB-001",
+      "locality": "Villa Carlos Paz / Punilla",
+      "origin": [-64.4980, -31.4210],
+      "destination": [-64.4920, -31.4150],
+      "shelterId": "SHL-CB-001",
+      "shelterName": "Cuartel Bomberos Voluntarios Villa Carlos Paz",
+      "shelterCategory": "FIRE_STATION",
+      "distanceKm": 3.8,
+      "durationMin": 7,
+      "coordinates": [
+        [-64.4980, -31.4210],
+        [-64.4950, -31.4180],
+        [-64.4920, -31.4150]
+      ]
+    },
+    {
+      "id": "STATIC-CB-002",
+      "locality": "Valle de Calamuchita / Yacanto / Sta. Rosa",
+      "origin": [-64.5350, -32.0680],
+      "destination": [-64.5420, -32.0710],
+      "shelterId": "SHL-CB-003",
+      "shelterName": "Cuartel Bomberos Voluntarios Santa Rosa de Calamuchita",
+      "shelterCategory": "FIRE_STATION",
+      "distanceKm": 5.2,
+      "durationMin": 10,
+      "coordinates": [
+        [-64.5350, -32.0680],
+        [-64.5380, -32.0700],
+        [-64.5420, -32.0710]
+      ]
+    }
+  ]
+}
