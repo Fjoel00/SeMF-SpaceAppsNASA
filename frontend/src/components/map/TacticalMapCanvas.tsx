@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
-import { Locate } from 'lucide-react';
+import { Crosshair, Locate } from 'lucide-react';
 import type {
   EvaluatedRouteOption,
   FireFrontEvent,
@@ -14,6 +14,39 @@ import {
   OSM_ATTRIBUTION,
 } from '../../map/mapStyle';
 
+/**
+ * Genera un polígono GeoJSON circular para el radio de precisión del GPS
+ * sin dependencias externas pesadas o problemas de tipado de módulo.
+ */
+function createGeoJsonCircle(
+  centerLon: number,
+  centerLat: number,
+  radiusMeters: number,
+  points = 32
+): GeoJSON.Feature<GeoJSON.Polygon> {
+  const coords: [number, number][] = [];
+  const km = radiusMeters / 1000;
+  const distanceX = km / (111.32 * Math.cos((centerLat * Math.PI) / 180));
+  const distanceY = km / 110.574;
+
+  for (let i = 0; i < points; i++) {
+    const theta = (i / points) * (2 * Math.PI);
+    const x = distanceX * Math.cos(theta);
+    const y = distanceY * Math.sin(theta);
+    coords.push([centerLon + x, centerLat + y]);
+  }
+  coords.push(coords[0]); // cerrar polígono
+
+  return {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [coords],
+    },
+    properties: {},
+  };
+}
+
 interface TacticalMapCanvasProps {
   events: FireFrontEvent[];
   points?: ThermalDetectionPoint[];
@@ -21,6 +54,8 @@ interface TacticalMapCanvasProps {
   routes?: EvaluatedRouteOption[];
   conservativeCorridor?: [number, number][] | null;
   userOrigin?: { lat: number; lon: number } | null;
+  userAccuracyMeters?: number | null;
+  isRealGps?: boolean;
   selectedEventId?: string | null;
   onSelectEvent?: (ev: FireFrontEvent) => void;
   onMapClickCoordinates?: (lat: number, lon: number) => void;
@@ -35,6 +70,8 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
   routes = [],
   conservativeCorridor = null,
   userOrigin = null,
+  userAccuracyMeters = null,
+  isRealGps = false,
   selectedEventId = null,
   onSelectEvent,
   onMapClickCoordinates,
@@ -47,6 +84,7 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
   const fireMarkersRef = useRef<maplibregl.Marker[]>([]);
   const shelterMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const hasAutoCenteredRef = useRef<boolean>(false);
   const [activeBasemap, setActiveBasemap] = useState<BasemapMode>(defaultBasemap);
 
   // Inicializar mapa MapLibre
@@ -73,7 +111,37 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
     });
 
     map.on('load', () => {
-      // 1. Fuente y capa para Rutas de Evacuación GeoJSON
+      // 1. Fuente y capas para el Círculo de Precisión GPS del Usuario
+      map.addSource('user-accuracy-source', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [],
+        },
+      });
+
+      map.addLayer({
+        id: 'user-accuracy-fill',
+        type: 'fill',
+        source: 'user-accuracy-source',
+        paint: {
+          'fill-color': '#3978D5',
+          'fill-opacity': 0.12,
+        },
+      });
+
+      map.addLayer({
+        id: 'user-accuracy-stroke',
+        type: 'line',
+        source: 'user-accuracy-source',
+        paint: {
+          'line-color': '#3978D5',
+          'line-width': 1.5,
+          'line-opacity': 0.45,
+        },
+      });
+
+      // 2. Fuente y capa para Rutas de Evacuación GeoJSON
       map.addSource('evacuation-routes-source', {
         type: 'geojson',
         data: {
@@ -94,7 +162,7 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
         paint: {
           'line-color': '#FFFFFF',
           'line-width': 8,
-          'line-opacity': 0.8,
+          'line-opacity': 0.85,
         },
       });
 
@@ -114,7 +182,7 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
         },
       });
 
-      // 2. Fuente y capa para Corredor Conservador de Flanco
+      // 3. Fuente y capa para Corredor Conservador de Flanco
       map.addSource('corridor-source', {
         type: 'geojson',
         data: {
@@ -143,7 +211,7 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
     };
   }, [onMapClickCoordinates, defaultBasemap]);
 
-  // Actualizar ubicación del usuario
+  // Actualizar ubicación del usuario y círculo de precisión
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -153,8 +221,8 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
         const el = document.createElement('div');
         el.className = 'relative flex items-center justify-center cursor-pointer';
         el.innerHTML = `
-          <div class="w-8 h-8 rounded-full bg-[#3978D5]/20 animate-ping absolute"></div>
-          <div class="w-6 h-6 rounded-full bg-[#3978D5] border-2 border-white shadow-md flex items-center justify-center text-white text-[10px] font-bold">
+          <div class="w-7 h-7 rounded-full bg-[#3978D5]/25 animate-ping absolute"></div>
+          <div class="w-5 h-5 rounded-full bg-[#3978D5] border-2 border-white shadow-md flex items-center justify-center text-white text-[9px] font-bold">
             📍
           </div>
         `;
@@ -164,18 +232,53 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
       } else {
         userMarkerRef.current.setLngLat([userOrigin.lon, userOrigin.lat]);
       }
+
+      // Actualizar círculo de precisión si está disponible la capa
+      const accSrc = map.getSource('user-accuracy-source') as maplibregl.GeoJSONSource | undefined;
+      if (accSrc) {
+        const accuracyMeters = userAccuracyMeters ? Math.max(userAccuracyMeters, 30) : 50;
+        try {
+          const circleFeature = createGeoJsonCircle(userOrigin.lon, userOrigin.lat, accuracyMeters, 32);
+          accSrc.setData(circleFeature);
+        } catch (e) {
+          console.warn('[SeMF] Error generando círculo de precisión:', e);
+        }
+      }
+
+      // Auto-centrar suavemente la primera vez que se detecta GPS real
+      if (isRealGps && !hasAutoCenteredRef.current) {
+        hasAutoCenteredRef.current = true;
+        map.flyTo({
+          center: [userOrigin.lon, userOrigin.lat],
+          zoom: 12.5,
+          duration: 1000,
+        });
+      }
     } else if (userMarkerRef.current) {
       userMarkerRef.current.remove();
       userMarkerRef.current = null;
     }
-  }, [userOrigin]);
+  }, [userOrigin, userAccuracyMeters, isRealGps]);
+
+  // Centrar manualmente en la ubicación del usuario
+  const centerOnUser = () => {
+    const map = mapRef.current;
+    if (!map || !userOrigin) {
+      if (onRequestUserGps) onRequestUserGps();
+      return;
+    }
+    map.flyTo({
+      center: [userOrigin.lon, userOrigin.lat],
+      zoom: 13,
+      duration: 800,
+    });
+  };
 
   // Actualizar marcadores de frentes de incendio
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    // Limpiar marcadores anteriores
     fireMarkersRef.current.forEach((m) => m.remove());
     fireMarkersRef.current = [];
 
@@ -346,7 +449,7 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
     <div className={`relative w-full ${heightClass} bg-[#F1F5F9] overflow-hidden`}>
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
-      {/* BOTONES FLOTANTES SUPERIORES (Capas y Mi Ubicación) */}
+      {/* BOTONES FLOTANTES SUPERIORES (Capas y Centrar Mi Ubicación) */}
       <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2">
         {/* Selector Calle / Satélite */}
         <div
@@ -376,21 +479,36 @@ export const TacticalMapCanvas: React.FC<TacticalMapCanvasProps> = ({
           </button>
         </div>
 
-        {/* Botón flotante para ubicar usuario GPS */}
-        {onRequestUserGps && (
+        {/* Botón flotante para centrar mapa en la ubicación del usuario */}
+        <button
+          onClick={centerOnUser}
+          aria-label="Centrar en mi ubicación"
+          className="p-2.5 rounded-xl bg-white text-[#202938] hover:text-[#3978D5] border border-[#E7EAF0] shadow-sm transition flex items-center justify-center group"
+          title="Centrar mapa en mi ubicación"
+        >
+          <Crosshair className="w-5 h-5 group-hover:scale-110 transition-transform text-[#3978D5]" />
+        </button>
+
+        {/* Botón flotante para re-solicitar GPS si está denegado o apagado */}
+        {onRequestUserGps && !isRealGps && (
           <button
             onClick={onRequestUserGps}
-            aria-label="Ubicar mi posición"
-            className="p-2.5 rounded-xl bg-white text-[#202938] hover:text-[#F36B35] border border-[#E7EAF0] shadow-sm transition flex items-center justify-center"
-            title="Ubicar mi posición actual"
+            aria-label="Activar ubicación GPS"
+            className="p-2.5 rounded-xl bg-[#FDF2EC] text-[#F36B35] border border-[#F36B35]/30 shadow-sm transition flex items-center justify-center"
+            title="Activar detección GPS"
           >
-            <Locate className="w-5 h-5" />
+            <Locate className="w-5 h-5 animate-pulse" />
           </button>
         )}
       </div>
 
       {/* LEYENDA Y ATRIBUCIÓN INFERIOR */}
       <div className="absolute bottom-3 left-3 z-10 bg-white/90 backdrop-blur-md border border-[#E7EAF0] rounded-xl px-3 py-1.5 text-[11px] text-[#687385] shadow-sm flex items-center gap-3">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-[#3978D5]" />
+          <b>{isRealGps ? 'GPS Activo' : 'Ubicación Manual'}</b>
+        </span>
+        <span>•</span>
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-[#F36B35]" />
           <b>{events.length}</b> focos

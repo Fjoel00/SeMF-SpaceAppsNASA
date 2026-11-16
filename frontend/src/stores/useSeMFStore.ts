@@ -11,6 +11,15 @@ import type {
   ThermalDetectionPoint,
 } from '../types/semf';
 
+export type GeolocationStatus =
+  | 'IDLE'
+  | 'DETECTING'
+  | 'AVAILABLE'
+  | 'UPDATING'
+  | 'DENIED'
+  | 'UNAVAILABLE'
+  | 'ERROR';
+
 interface LayerVisibilityState {
   viirsPoints: boolean;
   modisPoints: boolean;
@@ -42,7 +51,19 @@ interface SeMFStore {
   setSelectedPixel: (pt: ThermalDetectionPoint | null) => void;
 
   userOrigin: { lat: number; lon: number };
-  setUserOrigin: (lat: number, lon: number) => void;
+  userAccuracyMeters: number | null;
+  geolocationStatus: GeolocationStatus;
+  geolocationError: string | null;
+  isRealGps: boolean;
+  lastCalculatedOrigin: { lat: number; lon: number } | null;
+  setUserOrigin: (
+    lat: number,
+    lon: number,
+    accuracy?: number | null,
+    isReal?: boolean
+  ) => void;
+  setGeolocationStatus: (status: GeolocationStatus, errorMsg?: string | null) => void;
+  setLastCalculatedOrigin: (coords: { lat: number; lon: number } | null) => void;
 
   targetShelterId: string | null;
   setTargetShelterId: (id: string | null) => void;
@@ -70,9 +91,31 @@ export const useSeMFStore = create<SeMFStore>((set) => ({
   selectedPixel: null,
   setSelectedPixel: (pt) => set({ selectedPixel: pt }),
 
-  // Posición inicial táctica cercana a El Trapiche / La Florida (San Luis)
+  // Posición inicial táctica (se actualiza automáticamente por GPS al entrar)
   userOrigin: { lat: -33.195, lon: -66.035 },
-  setUserOrigin: (lat, lon) => set({ userOrigin: { lat, lon } }),
+  userAccuracyMeters: null,
+  geolocationStatus: 'IDLE',
+  geolocationError: null,
+  isRealGps: false,
+  lastCalculatedOrigin: null,
+
+  setUserOrigin: (lat, lon, accuracy = null, isReal = false) =>
+    set((state) => ({
+      userOrigin: { lat, lon },
+      userAccuracyMeters: accuracy !== undefined ? accuracy : state.userAccuracyMeters,
+      isRealGps: isReal !== undefined ? isReal : state.isRealGps,
+    })),
+
+  setGeolocationStatus: (status, errorMsg = null) =>
+    set({
+      geolocationStatus: status,
+      geolocationError: errorMsg,
+    }),
+
+  setLastCalculatedOrigin: (coords) =>
+    set({
+      lastCalculatedOrigin: coords,
+    }),
 
   targetShelterId: null,
   setTargetShelterId: (id) => set({ targetShelterId: id }),

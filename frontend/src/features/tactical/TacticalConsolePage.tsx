@@ -6,14 +6,15 @@ import {
   ChevronUp,
   Flame,
   Info,
-  Locate,
   Navigation,
+  RefreshCw,
   Shield,
   ShieldAlert,
   XCircle,
 } from 'lucide-react';
 import { apiClient } from '../../services/apiClient';
 import { useSeMFStore } from '../../stores/useSeMFStore';
+import { useUserGeolocation } from '../../hooks/useUserGeolocation';
 import type {
   ActiveFiresPayload,
   EvacuationPlanResponse,
@@ -34,12 +35,27 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
   const {
     selectedEvent,
     setSelectedEvent,
-    userOrigin,
-    setUserOrigin,
     targetShelterId,
     setTargetShelterId,
     safetyBufferKm,
+    setUserOrigin,
+    setLastCalculatedOrigin,
   } = useSeMFStore();
+
+  // Hook de geolocalización automática en tiempo real
+  const {
+    userOrigin,
+    userAccuracyMeters,
+    geolocationStatus,
+    geolocationError,
+    isRealGps,
+    displacementSinceRouteCalculated,
+    requestLocation,
+  } = useUserGeolocation({
+    autoStart: true,
+    enableWatch: true,
+    displacementThresholdMeters: 10,
+  });
 
   const [activeTab, setActiveTab] = useState<'rutas' | 'focos' | 'refugios'>('rutas');
   const [isPanelCollapsed, setIsPanelCollapsed] = useState<boolean>(false);
@@ -52,13 +68,11 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number>(0);
   const [isRoutingLoading, setIsRoutingLoading] = useState<boolean>(false);
   const [routingError, setRoutingError] = useState<string | null>(null);
-  const [gpsLoading, setGpsLoading] = useState<boolean>(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
 
   const events = firesData?.events || [];
   const activeEv: FireFrontEvent | null = selectedEvent || events[0] || null;
 
-  // Cálculo explícito bajo demanda (PASO 3)
+  // Cálculo explícito de ruta desde la ubicación real detectada
   const handleCalculateRoute = async () => {
     setIsRoutingLoading(true);
     setRoutingError(null);
@@ -73,34 +87,12 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
       });
       setPlan(res);
       setSelectedRouteIndex(0);
+      setLastCalculatedOrigin({ lat: userOrigin.lat, lon: userOrigin.lon });
     } catch (err) {
       setRoutingError(err instanceof Error ? err.message : 'Error al calcular la ruta de evacuación');
     } finally {
       setIsRoutingLoading(false);
     }
-  };
-
-  // Geolocalización real del navegador
-  const handleRequestGps = () => {
-    if (!navigator.geolocation) {
-      setGpsError('La geolocalización no es compatible con este navegador.');
-      return;
-    }
-    setGpsLoading(true);
-    setGpsError(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = Number(pos.coords.latitude.toFixed(5));
-        const lon = Number(pos.coords.longitude.toFixed(5));
-        setUserOrigin(lat, lon);
-        setGpsLoading(false);
-      },
-      (err) => {
-        setGpsError(`No se pudo obtener la ubicación: ${err.message}`);
-        setGpsLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
   };
 
   // Rutas disponibles del plan
@@ -121,12 +113,11 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
     }
   };
 
-  // Destino seleccionado
   const selectedShelter = shelters.find((s) => s.id === targetShelterId);
 
   return (
     <div className="relative w-full h-[calc(100dvh-56px)] md:h-[calc(100dvh-64px)] overflow-hidden flex bg-[#F7F8FA]">
-      {/* 1. MAPA HERO DE FONDO A PANTALLA COMPLETA */}
+      {/* 1. MAPA HERO CON MARCADOR DE USUARIO Y PRECISIÓN */}
       <div className="flex-1 h-full w-full relative">
         <TacticalMapCanvas
           events={events}
@@ -135,6 +126,8 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
           routes={currentRoute ? [currentRoute] : allRoutes}
           conservativeCorridor={plan?.conservative_escape_corridor?.corridor_coords || null}
           userOrigin={userOrigin}
+          userAccuracyMeters={userAccuracyMeters}
+          isRealGps={isRealGps}
           selectedEventId={activeEv?.event_id || null}
           onSelectEvent={(ev) => {
             setSelectedEvent(ev);
@@ -142,9 +135,10 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
             setIsPanelCollapsed(false);
           }}
           onMapClickCoordinates={(lat, lon) => {
-            setUserOrigin(lat, lon);
+            // Permitir seleccionar manualmente en el mapa si el usuario lo desea
+            setUserOrigin(lat, lon, null, false);
           }}
-          onRequestUserGps={handleRequestGps}
+          onRequestUserGps={requestLocation}
           heightClass="h-full"
           defaultBasemap="streets"
         />
@@ -232,7 +226,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
             <div className="w-8 h-1 rounded-full bg-[#E7EAF0] mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
             <Navigation className="w-4 h-4 text-[#F36B35]" />
             <span className="font-bold text-xs text-[#202938]">
-              {plan ? 'Resultado de evacuación' : 'Asistente de escape en 3 pasos'}
+              {plan ? 'Ruta de escape calculada' : 'Rutas de escape automáticas'}
             </span>
           </div>
           <button className="p-1 text-[#687385]">
@@ -282,40 +276,98 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
     </div>
   );
 
-  // ASISTENTE DE EVACUACIÓN EN 3 PASOS
+  // ASISTENTE DE EVACUACIÓN AUTOMÁTICA
   function renderEvacuationWizard() {
     return (
       <div className="space-y-4">
-        {/* PASO 1 — ¿DÓNDE ESTÁS? */}
+        {/* AVISO DE DESPLAZAMIENTO SI EL USUARIO SE MOVIÓ */}
+        {displacementSinceRouteCalculated > 250 && (
+          <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 text-[#3978D5] flex items-center justify-between gap-2 shadow-subtle animate-pulse">
+            <div className="text-xs">
+              <span className="font-bold">📍 Ubicación actualizada:</span> Te has desplazado{' '}
+              <b>{displacementSinceRouteCalculated} metros</b> desde el último cálculo.
+            </div>
+            <button
+              onClick={handleCalculateRoute}
+              disabled={isRoutingLoading}
+              className="px-2.5 py-1 rounded-xl bg-[#3978D5] text-white text-xs font-bold hover:bg-[#3978D5]/90 transition shrink-0"
+            >
+              Recalcular
+            </button>
+          </div>
+        )}
+
+        {/* PASO 1 — DETECCIÓN DE UBICACIÓN REAL */}
         <div className="bg-[#F7F8FA] border border-[#E7EAF0] rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-[#F36B35] text-white flex items-center justify-center text-xs font-bold">
                 1
               </span>
-              <span className="font-bold text-xs text-[#202938]">Tu ubicación</span>
+              <span className="font-bold text-xs text-[#202938]">Ubicación de partida</span>
             </div>
+
             <button
-              onClick={handleRequestGps}
-              disabled={gpsLoading}
+              onClick={requestLocation}
+              disabled={geolocationStatus === 'DETECTING'}
               className="px-3 py-1.5 rounded-xl bg-white text-[#3978D5] border border-[#E7EAF0] text-xs font-semibold hover:border-[#3978D5] transition flex items-center gap-1.5 shadow-subtle disabled:opacity-50"
             >
-              <Locate className="w-3.5 h-3.5" />
-              <span>{gpsLoading ? 'Localizando...' : 'Usar mi ubicación'}</span>
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${geolocationStatus === 'DETECTING' ? 'animate-spin' : ''}`}
+              />
+              <span>Actualizar GPS</span>
             </button>
           </div>
 
-          <p className="text-xs text-[#687385]">
-            Ubicación actual marcada en el mapa. También puedes pulsar directamente sobre el mapa para cambiarla.
-          </p>
+          {/* Estado de la geolocalización */}
+          <div className="pt-1">
+            {geolocationStatus === 'DETECTING' && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-[#3978D5]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#3978D5] animate-ping" />
+                <span>Detectando tu ubicación en tiempo real...</span>
+              </div>
+            )}
 
-          {gpsError && (
-            <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-[#DC4545]">
-              {gpsError}
-            </div>
-          )}
+            {geolocationStatus === 'AVAILABLE' && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-[#16A36A]">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-[#16A36A]" />
+                <div>
+                  <span className="font-semibold">Ubicación real activa</span>
+                  {userAccuracyMeters && (
+                    <span className="text-[11px] text-emerald-800 ml-1">
+                      (precisión: ±{userAccuracyMeters} m)
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
-          {/* Selector de coordenadas manual opcional */}
+            {geolocationStatus === 'DENIED' && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+                <div className="font-bold flex items-center gap-1.5 text-[#E5A000]">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Permiso de ubicación denegado</span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  Para obtener rutas automáticas basadas en tu ubicación, habilita el permiso de ubicación en tu navegador. También puedes pulsar directamente sobre el mapa para marcar tu posición.
+                </p>
+              </div>
+            )}
+
+            {(geolocationStatus === 'UNAVAILABLE' || geolocationStatus === 'ERROR') && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-[#DC4545] space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <XCircle className="w-4 h-4" />
+                  <span>Ubicación no disponible</span>
+                </div>
+                <p className="text-[11px] text-red-800 leading-relaxed">
+                  {geolocationError || 'No se pudo obtener la posición del dispositivo. Puedes pulsar sobre el mapa para ubicarte.'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Ajuste manual de coordenadas colapsado */}
           <div className="pt-1">
             <button
               onClick={() => setShowManualCoords(!showManualCoords)}
@@ -333,7 +385,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
                     type="number"
                     step="0.001"
                     value={userOrigin.lat}
-                    onChange={(e) => setUserOrigin(Number(e.target.value), userOrigin.lon)}
+                    onChange={(e) => setUserOrigin(Number(e.target.value), userOrigin.lon, null, false)}
                     className="w-full bg-white border border-[#E7EAF0] rounded-xl px-2.5 py-1 text-xs text-[#202938] mt-0.5 outline-none focus:border-[#F36B35]"
                   />
                 </div>
@@ -343,7 +395,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
                     type="number"
                     step="0.001"
                     value={userOrigin.lon}
-                    onChange={(e) => setUserOrigin(userOrigin.lat, Number(e.target.value))}
+                    onChange={(e) => setUserOrigin(userOrigin.lat, Number(e.target.value), null, false)}
                     className="w-full bg-white border border-[#E7EAF0] rounded-xl px-2.5 py-1 text-xs text-[#202938] mt-0.5 outline-none focus:border-[#F36B35]"
                   />
                 </div>
@@ -352,13 +404,13 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
           </div>
         </div>
 
-        {/* PASO 2 — ¿A DÓNDE NECESITAS LLEGAR? */}
+        {/* PASO 2 — DESTINO SEGURO */}
         <div className="bg-[#F7F8FA] border border-[#E7EAF0] rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-[#F36B35] text-white flex items-center justify-center text-xs font-bold">
               2
             </span>
-            <span className="font-bold text-xs text-[#202938]">Elegí un lugar seguro</span>
+            <span className="font-bold text-xs text-[#202938]">Refugio de evacuación</span>
           </div>
 
           <select
@@ -388,7 +440,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
           )}
         </div>
 
-        {/* PASO 3 — CONSULTAR RUTA */}
+        {/* PASO 3 — BOTÓN PRINCIPAL DE BÚSQUEDA */}
         <div className="space-y-3">
           <button
             onClick={handleCalculateRoute}
@@ -396,7 +448,11 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
             className="w-full py-3.5 px-4 rounded-2xl bg-[#F36B35] hover:bg-[#F36B35]/95 text-white font-bold text-sm transition shadow-card flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Navigation className={`w-4 h-4 ${isRoutingLoading ? 'animate-spin' : ''}`} />
-            <span>{isRoutingLoading ? 'Buscando ruta segura...' : 'Buscar ruta segura'}</span>
+            <span>
+              {isRoutingLoading
+                ? 'Calculando ruta de escape...'
+                : 'Buscar ruta de escape desde mi ubicación'}
+            </span>
           </button>
 
           {routingError && (
@@ -406,15 +462,15 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
           )}
         </div>
 
-        {/* RESULTADO DE LA EVACUACIÓN (SEMÁFORO DE 3 ESTADOS) */}
+        {/* RESULTADO DE LA EVACUACIÓN */}
         {plan && (
           <div className="space-y-3 pt-2">
-            {/* Tarjeta principal con el estado semafórico del backend */}
+            {/* Semáforo de 3 estados devuelto por el backend */}
             {plan.overall_status === 'SAFE_ROUTE_VERIFIED' && (
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-[#16A36A] space-y-1.5 shadow-subtle">
                 <div className="flex items-center gap-2 font-bold text-sm">
                   <CheckCircle2 className="w-5 h-5 text-[#16A36A] shrink-0" />
-                  <span>Ruta despejada</span>
+                  <span>Ruta despejada y segura</span>
                 </div>
                 <p className="text-xs text-emerald-800 leading-relaxed">
                   Se identificó una ruta sin conflictos detectados con los focos analizados.
@@ -426,7 +482,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
               <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-[#E5A000] space-y-1.5 shadow-subtle">
                 <div className="flex items-center gap-2 font-bold text-sm">
                   <AlertTriangle className="w-5 h-5 text-[#E5A000] shrink-0" />
-                  <span>Precaución</span>
+                  <span>Precaución por proximidad</span>
                 </div>
                 <p className="text-xs text-amber-900 leading-relaxed">
                   La ruta presenta proximidad a zonas de actividad de fuego. Se recomienda máxima precaución.
@@ -438,7 +494,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
               <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-[#DC4545] space-y-1.5 shadow-subtle">
                 <div className="flex items-center gap-2 font-bold text-sm">
                   <XCircle className="w-5 h-5 text-[#DC4545] shrink-0" />
-                  <span>Ruta bloqueada</span>
+                  <span>Ruta bloqueada por fuego</span>
                 </div>
                 <p className="text-xs text-red-900 leading-relaxed">
                   Se detectaron condiciones de riesgo que impiden recomendar esta ruta.
@@ -446,7 +502,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
               </div>
             )}
 
-            {/* Ficha resumen: Destino, Distancia, Tiempo, Estado */}
+            {/* Ficha resumen de ruta */}
             {currentRoute && (
               <div className="bg-white border border-[#E7EAF0] rounded-2xl p-4 space-y-3 shadow-subtle">
                 <div className="flex items-center justify-between">
@@ -498,7 +554,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
               </div>
             )}
 
-            {/* Corredor conservador si corresponde */}
+            {/* Corredor conservador de flanco si corresponde */}
             {plan.conservative_escape_corridor && (
               <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-950 text-xs space-y-1">
                 <div className="font-bold flex items-center gap-1.5 text-[#F36B35]">
@@ -511,7 +567,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
               </div>
             )}
 
-            {/* Acordeón secundario: Detalles técnicos */}
+            {/* Acordeón de detalles técnicos */}
             <div className="pt-1">
               <button
                 onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
@@ -611,7 +667,7 @@ export const TacticalConsolePage: React.FC<TacticalConsolePageProps> = ({
 
                 <button
                   onClick={() => {
-                    setUserOrigin(activeEv.centroid_lat + 0.015, activeEv.centroid_lon);
+                    setUserOrigin(activeEv.centroid_lat + 0.015, activeEv.centroid_lon, null, false);
                     setActiveTab('rutas');
                   }}
                   className="w-full py-2.5 rounded-xl bg-[#F36B35] hover:bg-[#F36B35]/90 text-white font-bold text-xs transition shadow-sm"
